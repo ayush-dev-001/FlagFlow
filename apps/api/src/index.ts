@@ -1,13 +1,31 @@
-import express from 'express';
+import { existsSync } from 'node:fs';
+import { createApp } from './app.js';
+import { createPrisma } from './db.js';
+import { loadEnv } from './env.js';
+import { createLogger } from './logger.js';
+import { createRedis } from './redis.js';
 
-// Phase 0 placeholder: env validation, logging, error handling and real health checks arrive in phase 1.
-const port = Number(process.env.PORT ?? 4000);
-const app = express();
+if (existsSync('.env')) process.loadEnvFile('.env');
 
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok' });
+const env = loadEnv();
+const logger = createLogger(env);
+const prisma = createPrisma(env.DATABASE_URL);
+const redis = createRedis(env.REDIS_URL);
+redis.on('error', (err) => logger.warn({ err }, 'redis connection error'));
+
+const server = createApp({ env, logger, prisma, redis }).listen(env.PORT, () => {
+  logger.info(`api listening on http://localhost:${env.PORT}`);
 });
 
-app.listen(port, () => {
-  console.log(`api listening on http://localhost:${port}`);
-});
+let closing = false;
+function shutdown(signal: string) {
+  if (closing) return;
+  closing = true;
+  logger.info({ signal }, 'shutting down');
+  server.close(() => {
+    void Promise.allSettled([prisma.$disconnect(), redis.quit()]).then(() => process.exit(0));
+  });
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

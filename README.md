@@ -16,19 +16,23 @@ Multi-tenant feature flags: teams turn app features on or off for specific end u
 npm install
 npm run setup:env      # creates each app's .env from .env.example with generated secrets
 docker compose up -d   # postgres :5432, redis :6379, mailpit :1025 (UI http://localhost:8025)
+npm run db:migrate     # applies Prisma migrations to the dev database
+npm run db:seed        # superadmin, the "acme" demo org with its admin, and six demo flags (safe to re-run)
 npm run dev            # api :4000, dashboard :5173, demo-api :4100, demo-web :5174
 ```
 
 ## Scripts
 
-| Script              | What it does                                                          |
-| ------------------- | --------------------------------------------------------------------- |
-| `npm run dev`       | Starts all four apps with live reload                                 |
-| `npm test`          | Unit and integration tests (Vitest)                                   |
-| `npm run verify`    | Typecheck, lint, format check, tests and build across every workspace |
-| `npm run security`  | `npm audit`, gitleaks, semgrep and the attack suite in `security/`    |
-| `npm run setup:env` | Creates missing `.env` files; never overwrites existing ones          |
-| `npm run format`    | Formats the repo with Prettier                                        |
+| Script               | What it does                                                                |
+| -------------------- | --------------------------------------------------------------------------- |
+| `npm run dev`        | Starts all four apps with live reload                                       |
+| `npm test`           | Unit and integration tests (Vitest)                                         |
+| `npm run verify`     | Typecheck, lint, format check, tests and build across every workspace       |
+| `npm run security`   | `npm audit`, gitleaks, semgrep and the attack suite in `security/`          |
+| `npm run setup:env`  | Creates missing `.env` files and adds missing keys; never overwrites values |
+| `npm run db:migrate` | Creates and applies Prisma migrations (dev database)                        |
+| `npm run db:seed`    | Seeds the dev database; only creates what is missing                        |
+| `npm run format`     | Formats the repo with Prettier                                              |
 
 CI runs `npm run verify` on every push to `main` and on pull requests.
 

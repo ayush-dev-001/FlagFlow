@@ -11,6 +11,24 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    # Integration tests need the same Postgres + Redis as local docker compose.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: flagflow
+          POSTGRES_PASSWORD: flagflow
+          POSTGRES_DB: flagflow_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U flagflow -d flagflow_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0

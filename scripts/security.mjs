@@ -67,12 +67,10 @@ const failed = [];
 for (const [name, cmd, args] of steps) {
   console.log(`\n▶ ${name}`);
   // MSYS_NO_PATHCONV stops Git Bash from rewriting container paths like /src when this runs under it.
-  const r = spawnSync(cmd, args, {
-    cwd: root,
-    stdio: 'inherit',
-    shell: win && cmd !== 'docker',
-    env: { ...process.env, MSYS_NO_PATHCONV: '1' },
-  });
+  // npm/npx are .cmd shims on Windows and need a shell; pass one command string so nothing is re-split.
+  const shell = win && cmd !== 'docker';
+  const opts = { cwd: root, stdio: 'inherit', env: { ...process.env, MSYS_NO_PATHCONV: '1' } };
+  const r = shell ? spawnSync([cmd, ...args].join(' '), { ...opts, shell }) : spawnSync(cmd, args, opts);
   if (r.status !== 0) failed.push(name);
 }
 

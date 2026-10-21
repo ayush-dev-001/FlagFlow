@@ -15,6 +15,7 @@ export default defineConfig(
       '.claude/**',
       '.agents/**',
       '.aider-desk/**',
+      'apps/api/src/generated/**',
     ],
   },
   js.configs.recommended,
@@ -24,17 +25,30 @@ export default defineConfig(
   },
   // TS config files outside every workspace tsconfig get syntax-only rules.
   {
-    files: ['*.ts', 'security/**/*.ts'],
+    files: ['*.ts', 'security/**/*.ts', 'apps/api/prisma.config.ts'],
     extends: [tseslint.configs.recommended],
   },
   {
     files: ['{apps,packages}/**/*.{ts,tsx}'],
+    ignores: ['apps/api/prisma.config.ts'],
     extends: [tseslint.configs.recommendedTypeChecked],
+    rules: {
+      // Express tells error handlers apart by arity, so `_next` must stay.
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+    },
     languageOptions: {
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  // supertest types response bodies as `any`; asserting on them is the point of a test.
+  {
+    files: ['**/*.test.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
     },
   },
   {

@@ -1,0 +1,191 @@
+// Data model from docs/ARCHITECTURE.md §4. The connection URL lives in prisma.config.ts.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPERADMIN
+  ADMIN
+  MEMBER
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+}
+
+enum AuditAction {
+  ORG_CREATED
+  ORG_UPDATED
+  ORG_STATUS_CHANGED
+  MEMBER_INVITED
+  INVITE_REVOKED
+  INVITE_ACCEPTED
+  MEMBER_ROLE_CHANGED
+  MEMBER_DEACTIVATED
+  MEMBER_REACTIVATED
+  API_KEY_CREATED
+  API_KEY_REVOKED
+  FLAG_CREATED
+  FLAG_UPDATED
+  FLAG_TOGGLED
+  FLAG_TARGETS_CHANGED
+  FLAG_DELETED
+}
+
+model Organization {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  users       User[]
+  apiKeys     ApiKey[]
+  flags       Flag[]
+  flagTargets FlagTarget[]
+  invites     Invite[]
+  auditLogs   AuditLog[]
+
+  @@map("organization")
+}
+
+model User {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  /// Null only for the superadmin.
+  orgId        String?   @map("org_id") @db.Uuid
+  email        String    @unique @db.Citext
+  name         String
+  passwordHash String    @map("password_hash")
+  role         Role      @default(MEMBER)
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  org          Organization? @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  sessions     Session[]
+  auditLogs    AuditLog[]
+  flagsCreated Flag[]        @relation("FlagCreatedBy")
+  flagsUpdated Flag[]        @relation("FlagUpdatedBy")
+
+  @@index([orgId])
+  @@map("user")
+}
+
+model ApiKey {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  orgId      String    @map("org_id") @db.Uuid
+  name       String
+  /// First characters of the key, for display only (e.g. ff_live_ab12).
+  prefix     String
+  /// SHA-256 of the full key; the key itself is never stored.
+  keyHash    String    @unique @map("key_hash")
+  lastUsedAt DateTime? @map("last_used_at") @db.Timestamptz
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@map("api_key")
+}
+
+model Flag {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  orgId           String    @map("org_id") @db.Uuid
+  /// snake_case, unique per org: ^[a-z0-9_]{2,64}$
+  key             String
+  description     String    @default("")
+  enabled         Boolean   @default(false)
+  targetAll       Boolean   @default(false) @map("target_all")
+  version         Int       @default(1)
+  createdById     String?   @map("created_by") @db.Uuid
+  updatedById     String?   @map("updated_by") @db.Uuid
+  lastEvaluatedAt DateTime? @map("last_evaluated_at") @db.Timestamptz
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdBy User?        @relation("FlagCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?        @relation("FlagUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  targets   FlagTarget[]
+
+  @@unique([orgId, key])
+  @@map("flag")
+}
+
+model FlagTarget {
+  flagId    String @map("flag_id") @db.Uuid
+  endUserId String @map("end_user_id")
+  /// Denormalised for the end-user lookup index.
+  orgId     String @map("org_id") @db.Uuid
+
+  flag Flag         @relation(fields: [flagId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@id([flagId, endUserId])
+  @@index([orgId, endUserId])
+  @@map("flag_target")
+}
+
+model Invite {
+  id         String       @id @default(uuid(7)) @db.Uuid
+  orgId      String       @map("org_id") @db.Uuid
+  email      String       @db.Citext
+  role       Role         @default(MEMBER)
+  tokenHash  String       @unique @map("token_hash")
+  status     InviteStatus @default(PENDING)
+  expiresAt  DateTime     @map("expires_at") @db.Timestamptz
+  acceptedAt DateTime?    @map("accepted_at") @db.Timestamptz
+  createdAt  DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@map("invite")
+}
+
+model Session {
+  id               String    @id @default(uuid(7)) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  refreshTokenHash String    @unique @map("refresh_token_hash")
+  expiresAt        DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt        DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model AuditLog {
+  id        BigInt      @id @default(autoincrement())
+  orgId     String      @map("org_id") @db.Uuid
+  actorId   String?     @map("actor_id") @db.Uuid
+  /// No foreign key, so history survives flag deletion.
+  flagId    String?     @map("flag_id") @db.Uuid
+  action    AuditAction
+  /// before / after values
+  metadata  Json        @default("{}")
+  ip        String?     @db.Inet
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz
+
+  org   Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  actor User?        @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([orgId, createdAt(sort: Desc)])
+  @@index([orgId, flagId])
+  @@map("audit_log")
+}
