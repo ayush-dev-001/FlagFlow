@@ -1,0 +1,13 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+package-lock.json
+skills-lock.json
+.agents
+.aider-desk
+.claude
+# Hand-maintained design docs keep their own table layout.
+PLAN.md
+docs

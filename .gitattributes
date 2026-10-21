@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.png binary
+*.ico binary
+# Vendored skills are stored byte-for-byte so skills-lock.json hashes stay valid.
+.agents/** -text

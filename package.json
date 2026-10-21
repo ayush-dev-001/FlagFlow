@@ -1,0 +1,42 @@
+{
+  "name": "flagflow",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "packages/shared",
+    "packages/flag-client",
+    "apps/api",
+    "apps/dashboard",
+    "apps/demo-api",
+    "apps/demo-web"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,dashboard,demo-api,demo-web -c blue,magenta,green,yellow \"npm run dev -w apps/api\" \"npm run dev -w apps/dashboard\" \"npm run dev -w apps/demo-api\" \"npm run dev -w apps/demo-web\"",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
+    "security": "node scripts/security.mjs",
+    "setup:env": "node scripts/setup-env.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
+  }
+}

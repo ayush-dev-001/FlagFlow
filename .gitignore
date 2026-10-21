@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# env (only .env.example files are committed)
+.env
+.env.*
+!.env.example
+
+# test & tooling output
+playwright-report/
+test-results/
+.zap/
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# local assistant config
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+
+# duplicate skill copies made by the skills CLI for other tools (.agents/skills is the tracked copy)
+.aider-desk/
