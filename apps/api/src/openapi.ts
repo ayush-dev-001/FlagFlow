@@ -19,6 +19,19 @@ import {
   membersResponse,
   updateMemberBody,
 } from './team/schemas.js';
+import {
+  auditPage,
+  auditQuery,
+  createFlagBody,
+  endUserFlags,
+  flagDetail,
+  flagSummary,
+  listFlagsQuery,
+  targetsBody,
+  updateFlagBody,
+} from './flags/schemas.js';
+
+const flagResponse = z.object({ flag: flagDetail });
 
 // OpenAPI 3.1 built from the same zod schemas the routes validate with, so the docs can't drift from the code.
 // Each phase adds its routes here. `{name}` segments in a path become required path parameters.
@@ -28,6 +41,8 @@ interface RouteDoc {
   summary: string;
   tag: string;
   body?: Schema;
+  /** An object schema whose keys become optional query parameters. */
+  query?: z.ZodObject;
   auth?: 'bearer' | 'refreshCookie';
   responses: Record<number, { description: string; schema?: Schema }>;
 }
@@ -153,6 +168,83 @@ const routes: Record<string, Record<string, RouteDoc>> = {
       responses: { 204: { description: 'Revoked' }, ...errors(401, 403, 404) },
     },
   },
+  '/api/flags': {
+    get: {
+      summary: 'Flags, filterable by search text and board state',
+      tag: 'Flags',
+      auth: 'bearer',
+      query: listFlagsQuery,
+      responses: {
+        200: { description: 'Flags', schema: z.object({ flags: z.array(flagSummary) }) },
+        ...errors(400, 401, 403),
+      },
+    },
+    post: {
+      summary: 'Create a flag (always starts off)',
+      tag: 'Flags',
+      auth: 'bearer',
+      body: createFlagBody,
+      responses: { 201: { description: 'Created', schema: flagResponse }, ...errors(400, 401, 403, 409) },
+    },
+  },
+  '/api/flags/{id}': {
+    get: {
+      summary: 'A flag with its targets',
+      tag: 'Flags',
+      auth: 'bearer',
+      responses: { 200: { description: 'Flag', schema: flagResponse }, ...errors(401, 403, 404) },
+    },
+    patch: {
+      summary: 'Change description or all-users targeting',
+      tag: 'Flags',
+      auth: 'bearer',
+      body: updateFlagBody,
+      responses: { 200: { description: 'Updated', schema: flagResponse }, ...errors(400, 401, 403, 404) },
+    },
+    delete: {
+      summary: 'Delete a flag (admin)',
+      tag: 'Flags',
+      auth: 'bearer',
+      responses: { 204: { description: 'Deleted' }, ...errors(401, 403, 404) },
+    },
+  },
+  '/api/flags/{id}/toggle': {
+    post: {
+      summary: 'Turn a flag on or off',
+      tag: 'Flags',
+      auth: 'bearer',
+      responses: { 200: { description: 'Toggled', schema: flagResponse }, ...errors(401, 403, 404) },
+    },
+  },
+  '/api/flags/{id}/targets': {
+    post: {
+      summary: 'Add or remove targeted end-user ids',
+      tag: 'Flags',
+      auth: 'bearer',
+      body: targetsBody,
+      responses: { 200: { description: 'Updated', schema: flagResponse }, ...errors(400, 401, 403, 404) },
+    },
+  },
+  '/api/end-users/{endUserId}/flags': {
+    get: {
+      summary: 'Every flag and what one end user gets',
+      tag: 'Flags',
+      auth: 'bearer',
+      responses: {
+        200: { description: 'Flags for the user', schema: endUserFlags },
+        ...errors(400, 401, 403),
+      },
+    },
+  },
+  '/api/audit-logs': {
+    get: {
+      summary: 'Audit log, newest first, cursor-paginated (admin)',
+      tag: 'Audit',
+      auth: 'bearer',
+      query: auditQuery,
+      responses: { 200: { description: 'Entries', schema: auditPage }, ...errors(400, 401, 403) },
+    },
+  },
 };
 
 const pathParams = (path: string) =>
@@ -171,6 +263,12 @@ export function buildOpenApi() {
         Object.entries(methods).map(([method, doc]) => {
           const parameters = [
             ...pathParams(path),
+            ...Object.keys(doc.query?.shape ?? {}).map((name) => ({
+              name,
+              in: 'query',
+              required: false,
+              schema: { type: 'string' },
+            })),
             ...(doc.auth === 'refreshCookie'
               ? [{ name: 'X-Requested-With', in: 'header', required: true, schema: { type: 'string' } }]
               : []),

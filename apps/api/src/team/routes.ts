@@ -1,6 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { type Request, Router } from 'express';
-import { z } from 'zod';
+import { Router } from 'express';
 import { audit } from '../audit.js';
 import { requireAuth, requireRole } from '../auth/middleware.js';
 import type { Sessions } from '../auth/sessions.js';
@@ -8,6 +7,7 @@ import { sha256 } from '../auth/tokens.js';
 import type { PrismaClient } from '../db.js';
 import { AppError } from '../errors.js';
 import type { Invite, User } from '../generated/prisma/client.js';
+import { notFound, orgOf, parseId } from '../http.js';
 import type { Mailer } from '../mailer.js';
 import type { Limiters } from '../rateLimit.js';
 import type { Redis } from '../redis.js';
@@ -23,23 +23,6 @@ export interface TeamDeps {
   mailer: Mailer;
   jwtSecret: string;
   dashboardOrigin: string;
-}
-
-const notFound = (what: string) => new AppError(404, 'NOT_FOUND', `${what} not found`);
-const idParam = z.uuid();
-
-/** The caller's org. Every query below filters on it; it never comes from the request body or URL. */
-function orgOf(req: Request): string {
-  const orgId = req.auth?.orgId;
-  if (!orgId) throw new AppError(403, 'FORBIDDEN', 'You do not have access to this');
-  return orgId;
-}
-
-/** A malformed id can't match anything, so it's the same 404 as a missing one. */
-function parseId(raw: unknown, what: string): string {
-  const id = idParam.safeParse(raw);
-  if (!id.success) throw notFound(what);
-  return id.data;
 }
 
 export const toMember = (u: User) => ({

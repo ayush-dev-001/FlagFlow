@@ -9,6 +9,8 @@ import { sessions } from './auth/sessions.js';
 import type { PrismaClient } from './db.js';
 import type { Env } from './env.js';
 import { errorHandler, notFound } from './errors.js';
+import { flagRoutes } from './flags/routes.js';
+import { flagService } from './flags/service.js';
 import { healthRouter } from './health.js';
 import type { Logger } from './logger.js';
 import type { Mailer } from './mailer.js';
@@ -74,6 +76,16 @@ export function createApp({ env, logger, prisma, redis, mailer }: AppDeps): Expr
       dashboardOrigin: env.DASHBOARD_ORIGIN,
     }),
   );
+  const { flagsRouter, endUsersRouter, auditRouter } = flagRoutes({
+    prisma,
+    redis,
+    limiters,
+    jwtSecret,
+    flags: flagService(prisma, redis, logger),
+  });
+  app.use('/api/flags', flagsRouter);
+  app.use('/api/end-users', endUsersRouter);
+  app.use('/api/audit-logs', auditRouter);
 
   app.use(notFound);
   app.use(errorHandler);

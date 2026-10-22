@@ -43,12 +43,14 @@ enum AuditAction {
 }
 
 model Organization {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  name      String
-  slug      String   @unique
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id           String   @id @default(uuid(7)) @db.Uuid
+  name         String
+  slug         String   @unique
+  isActive     Boolean  @default(true) @map("is_active")
+  /// Bumped in the same transaction as every flag change: the snapshot and SSE event version.
+  flagsVersion Int      @default(0) @map("flags_version")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   users       User[]
   apiKeys     ApiKey[]
