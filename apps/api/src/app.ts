@@ -11,22 +11,28 @@ import type { Env } from './env.js';
 import { errorHandler, notFound } from './errors.js';
 import { healthRouter } from './health.js';
 import type { Logger } from './logger.js';
+import type { Mailer } from './mailer.js';
 import { docsRouter } from './openapi.js';
 import { createLimiters } from './rateLimit.js';
 import type { Redis } from './redis.js';
+import { teamRouter } from './team/routes.js';
 
 export interface AppDeps {
-  env: Pick<Env, 'DASHBOARD_ORIGIN' | 'JWT_ACCESS_SECRET' | 'REFRESH_TOKEN_TTL_DAYS' | 'TRUST_PROXY'>;
+  env: Pick<
+    Env,
+    'DASHBOARD_ORIGIN' | 'JWT_ACCESS_SECRET' | 'REFRESH_TOKEN_TTL_DAYS' | 'TRUST_PROXY' | 'RATE_LIMIT_SCALE'
+  >;
   logger: Logger;
   prisma: PrismaClient;
   redis: Redis;
+  mailer: Mailer;
 }
 
 const BODY_LIMIT = '100kb';
 // A caller-supplied request id is reused only if it is short and plain, so it can't inject into logs or headers.
 const SAFE_REQUEST_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
-export function createApp({ env, logger, prisma, redis }: AppDeps): Express {
+export function createApp({ env, logger, prisma, redis, mailer }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY);
@@ -49,17 +55,23 @@ export function createApp({ env, logger, prisma, redis }: AppDeps): Express {
   // The dashboard is the only browser origin; /v1 is server-to-server and gets no CORS (ARCHITECTURE §9).
   app.use('/api', cors({ origin: env.DASHBOARD_ORIGIN, credentials: true }));
 
-  const limiters = createLimiters(redis);
+  const limiters = createLimiters(redis, env.RATE_LIMIT_SCALE);
+  const userSessions = sessions({ prisma, redis, logger, ttlDays: env.REFRESH_TOKEN_TTL_DAYS });
+  const jwtSecret = env.JWT_ACCESS_SECRET;
+
   app.use('/api/health', healthRouter(prisma, redis));
   app.use('/api/docs', docsRouter());
+  app.use('/api/auth', authRouter({ prisma, redis, limiters, jwtSecret, sessions: userSessions }));
   app.use(
-    '/api/auth',
-    authRouter({
+    '/api/team',
+    teamRouter({
       prisma,
       redis,
       limiters,
-      jwtSecret: env.JWT_ACCESS_SECRET,
-      sessions: sessions({ prisma, redis, logger, ttlDays: env.REFRESH_TOKEN_TTL_DAYS }),
+      mailer,
+      jwtSecret,
+      sessions: userSessions,
+      dashboardOrigin: env.DASHBOARD_ORIGIN,
     }),
   );
 

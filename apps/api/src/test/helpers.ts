@@ -1,6 +1,7 @@
 import { pino } from 'pino';
 import type { AppDeps } from '../app.js';
 import { createPrisma, type PrismaClient } from '../db.js';
+import type { InviteEmail, Mailer } from '../mailer.js';
 import { createRedis, type Redis } from '../redis.js';
 
 // Tests use the docker test database and Redis DB 1 (PLAN.md §7), never the dev data.
@@ -33,18 +34,43 @@ export function deadRedis(): Redis {
 
 export const TEST_JWT_SECRET = 'test-secret-'.padEnd(64, 'x');
 
-export function testDeps(prisma: PrismaClient, redis: Redis, env: Partial<AppDeps['env']> = {}): AppDeps {
+/** Records sent emails instead of delivering them. */
+export function captureMailer() {
+  const sent: InviteEmail[] = [];
+  const mailer: Mailer = {
+    sendInvite: (email) => {
+      sent.push(email);
+      return Promise.resolve();
+    },
+  };
+  /** The raw token from the most recent invite link sent to `to`. */
+  const lastInviteToken = (to: string) => {
+    const email = sent.findLast((e) => e.to === to);
+    if (!email) throw new Error(`no invite sent to ${to}`);
+    return email.link.split('/invite/')[1]!;
+  };
+  return { mailer, sent, lastInviteToken };
+}
+
+export function testDeps(
+  prisma: PrismaClient,
+  redis: Redis,
+  env: Partial<AppDeps['env']> = {},
+  mailer: Mailer = captureMailer().mailer,
+): AppDeps {
   return {
     env: {
       DASHBOARD_ORIGIN,
       JWT_ACCESS_SECRET: TEST_JWT_SECRET,
       REFRESH_TOKEN_TTL_DAYS: 7,
       TRUST_PROXY: 0,
+      RATE_LIMIT_SCALE: 1,
       ...env,
     },
     logger: silentLogger,
     prisma,
     redis,
+    mailer,
   };
 }
 

@@ -10,9 +10,10 @@ import type { Limiters } from '../rateLimit.js';
 import type { Redis } from '../redis.js';
 import { requireAuth } from './middleware.js';
 import { hashPassword, verifyPassword } from './passwords.js';
+import { acceptInviteBody } from '../team/schemas.js';
 import { loginBody, registerBody } from './schemas.js';
 import type { Sessions } from './sessions.js';
-import { signAccessToken } from './tokens.js';
+import { sha256, signAccessToken } from './tokens.js';
 
 export const REFRESH_COOKIE = 'ff_refresh';
 
@@ -47,6 +48,9 @@ function slugify(name: string): string {
 }
 
 const invalidCredentials = () => new AppError(401, 'INVALID_CREDENTIALS', 'Invalid email or password');
+// One answer for unknown, expired, revoked and used invites, so a token's state can't be probed.
+const invalidInvite = () => new AppError(404, 'INVITE_INVALID', 'This invite link is invalid or has expired');
+const INVITE_TOKEN = /^[A-Za-z0-9_-]{43}$/;
 const emailTaken = () => new AppError(409, 'EMAIL_TAKEN', 'An account with this email already exists');
 
 export function authRouter({ prisma, redis, sessions, limiters, jwtSecret }: AuthDeps): Router {
@@ -64,6 +68,67 @@ export function authRouter({ prisma, redis, sessions, limiters, jwtSecret }: Aut
     res.cookie(REFRESH_COOKIE, session.refreshToken, cookieOptions(session.expiresAt));
     return { accessToken: access.token, expiresIn: access.expiresIn };
   }
+
+  /** A usable invite for this token, or null. */
+  async function findUsableInvite(token: unknown) {
+    if (typeof token !== 'string' || !INVITE_TOKEN.test(token)) return null;
+    const invite = await prisma.invite.findUnique({
+      where: { tokenHash: sha256(token) },
+      include: { org: true },
+    });
+    if (!invite || invite.status !== 'PENDING' || invite.expiresAt <= new Date() || !invite.org.isActive)
+      return null;
+    return invite;
+  }
+
+  router.get('/invites/:token', limiters.publicAuth, async (req, res) => {
+    const invite = await findUsableInvite(req.params.token);
+    if (!invite) throw invalidInvite();
+    res.json({ email: invite.email, role: invite.role, organization: { name: invite.org.name } });
+  });
+
+  router.post('/invites/:token/accept', limiters.publicAuth, async (req, res) => {
+    const body = acceptInviteBody.parse(req.body);
+    const invite = await findUsableInvite(req.params.token);
+    if (!invite) throw invalidInvite();
+    const passwordHash = await hashPassword(body.password);
+
+    let user: User;
+    try {
+      user = await prisma.$transaction(async (tx) => {
+        // Claim the invite with a conditional update: of two concurrent accepts only one can win.
+        const { count } = await tx.invite.updateMany({
+          where: { id: invite.id, status: 'PENDING', expiresAt: { gt: new Date() } },
+          data: { status: 'ACCEPTED', acceptedAt: new Date() },
+        });
+        if (count === 0) throw invalidInvite();
+        const created = await tx.user.create({
+          data: {
+            orgId: invite.orgId,
+            email: invite.email,
+            name: body.name,
+            passwordHash,
+            role: invite.role,
+          },
+        });
+        await audit(tx, {
+          orgId: invite.orgId,
+          actorId: created.id,
+          ip: req.ip,
+          action: 'INVITE_ACCEPTED',
+          metadata: { inviteId: invite.id, role: invite.role },
+        });
+        return created;
+      });
+    } catch (err) {
+      // The email got an account some other way after the invite was sent.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') throw emailTaken();
+      throw err;
+    }
+
+    const tokens = await startSession(res, user);
+    res.status(201).json({ ...tokens, user: toPublicUser(user), organization: toPublicOrg(invite.org) });
+  });
 
   router.post('/register', limiters.publicAuth, async (req, res) => {
     const body = registerBody.parse(req.body);

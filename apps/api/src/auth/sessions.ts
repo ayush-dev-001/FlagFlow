@@ -25,7 +25,17 @@ export function sessions({ prisma, redis, logger, ttlDays }: SessionDeps) {
     await redis.del(sessionKey(sid));
   }
 
+  /** Ends every live session of a user, e.g. after a role change or deactivation, so stale tokens stop working. */
+  async function revokeAllForUser(userId: string) {
+    const live = await prisma.session.findMany({ where: { userId, revokedAt: null }, select: { id: true } });
+    if (live.length === 0) return;
+    await prisma.session.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: new Date() } });
+    await redis.del(...live.map((s) => sessionKey(s.id)));
+  }
+
   return {
+    revokeAllForUser,
+
     /** Starts a session. Its lifetime is fixed at login: refreshing rotates the token but never extends it. */
     async create(userId: string) {
       const sid = randomUUID();

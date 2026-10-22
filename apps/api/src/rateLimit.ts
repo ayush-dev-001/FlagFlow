@@ -16,12 +16,15 @@ const bodyEmail = (req: Request): string => {
   return body.email.trim().toLowerCase().slice(0, 254);
 };
 
-/** Redis-backed limiters (ARCHITECTURE §5), so limits hold across every API instance. */
-export function createLimiters(redis: Redis) {
+/**
+ * Redis-backed limiters (ARCHITECTURE §5), so limits hold across every API instance.
+ * `scale` multiplies every limit; it is 1 everywhere except the local ZAP scan (see env.ts).
+ */
+export function createLimiters(redis: Redis, scale = 1) {
   const limiter = (name: string, limit: number, keyGenerator: (req: Request) => string) =>
     rateLimit({
       windowMs: MINUTE,
-      limit,
+      limit: limit * scale,
       keyGenerator,
       standardHeaders: 'draft-8',
       legacyHeaders: false,

@@ -38,6 +38,13 @@ describe('loadEnv', () => {
     expect(() => loadEnv({ ...valid, REDIS_URL: 'not a url' })).toThrow(/REDIS_URL/);
   });
 
+  it('never allows raised rate limits in production', () => {
+    expect(loadEnv({ ...valid, NODE_ENV: 'test', RATE_LIMIT_SCALE: '100' }).RATE_LIMIT_SCALE).toBe(100);
+    expect(() => loadEnv({ ...valid, NODE_ENV: 'production', RATE_LIMIT_SCALE: '100' })).toThrow(
+      /RATE_LIMIT_SCALE/,
+    );
+  });
+
   it('rejects an unknown NODE_ENV', () => {
     expect(() => loadEnv({ ...valid, NODE_ENV: 'staging' })).toThrow(/NODE_ENV/);
   });

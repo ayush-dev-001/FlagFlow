@@ -9,9 +9,19 @@ import {
   registerResponse,
   sessionResponse,
 } from './auth/schemas.js';
+import {
+  acceptInviteBody,
+  createInviteBody,
+  invite,
+  invitePreview,
+  invitesResponse,
+  member,
+  membersResponse,
+  updateMemberBody,
+} from './team/schemas.js';
 
 // OpenAPI 3.1 built from the same zod schemas the routes validate with, so the docs can't drift from the code.
-// Each phase adds its routes here.
+// Each phase adds its routes here. `{name}` segments in a path become required path parameters.
 
 type Schema = z.ZodType;
 interface RouteDoc {
@@ -82,34 +92,106 @@ const routes: Record<string, Record<string, RouteDoc>> = {
       responses: { 200: { description: 'Current user', schema: meResponse }, ...errors(401) },
     },
   },
+  '/api/auth/invites/{token}': {
+    get: {
+      summary: 'Preview an invite',
+      tag: 'Auth',
+      responses: { 200: { description: 'Invite', schema: invitePreview }, ...errors(404, 429) },
+    },
+  },
+  '/api/auth/invites/{token}/accept': {
+    post: {
+      summary: 'Accept an invite and log in',
+      tag: 'Auth',
+      body: acceptInviteBody,
+      responses: { 201: { description: 'Joined', schema: sessionResponse }, ...errors(400, 404, 409, 429) },
+    },
+  },
+  '/api/team/members': {
+    get: {
+      summary: 'Members of the organization',
+      tag: 'Team',
+      auth: 'bearer',
+      responses: { 200: { description: 'Members', schema: membersResponse }, ...errors(401, 403) },
+    },
+  },
+  '/api/team/members/{id}': {
+    patch: {
+      summary: "Change a member's role or active status (admin)",
+      tag: 'Team',
+      auth: 'bearer',
+      body: updateMemberBody,
+      responses: {
+        200: { description: 'Updated', schema: z.object({ member }) },
+        ...errors(400, 401, 403, 404, 409),
+      },
+    },
+  },
+  '/api/team/invites': {
+    get: {
+      summary: 'Invites of the organization (admin)',
+      tag: 'Team',
+      auth: 'bearer',
+      responses: { 200: { description: 'Invites', schema: invitesResponse }, ...errors(401, 403) },
+    },
+    post: {
+      summary: 'Invite someone by email (admin)',
+      tag: 'Team',
+      auth: 'bearer',
+      body: createInviteBody,
+      responses: {
+        201: { description: 'Invited', schema: z.object({ invite }) },
+        ...errors(400, 401, 403, 409),
+      },
+    },
+  },
+  '/api/team/invites/{id}': {
+    delete: {
+      summary: 'Revoke a pending invite (admin)',
+      tag: 'Team',
+      auth: 'bearer',
+      responses: { 204: { description: 'Revoked' }, ...errors(401, 403, 404) },
+    },
+  },
 };
+
+const pathParams = (path: string) =>
+  [...path.matchAll(/\{(\w+)\}/g)].map(([, name]) => ({
+    name,
+    in: 'path',
+    required: true,
+    schema: { type: 'string' },
+  }));
 
 export function buildOpenApi() {
   const paths = Object.fromEntries(
     Object.entries(routes).map(([path, methods]) => [
       path,
       Object.fromEntries(
-        Object.entries(methods).map(([method, doc]) => [
-          method,
-          {
-            summary: doc.summary,
-            tags: [doc.tag],
-            ...(doc.auth === 'bearer' && { security: [{ bearer: [] }] }),
-            ...(doc.auth === 'refreshCookie' && {
-              security: [{ refreshCookie: [] }],
-              parameters: [
-                { name: 'X-Requested-With', in: 'header', required: true, schema: { type: 'string' } },
-              ],
-            }),
-            ...(doc.body && { requestBody: { required: true, content: json(doc.body, 'input') } }),
-            responses: Object.fromEntries(
-              Object.entries(doc.responses).map(([status, r]) => [
-                status,
-                { description: r.description, ...(r.schema && { content: json(r.schema, 'output') }) },
-              ]),
-            ),
-          },
-        ]),
+        Object.entries(methods).map(([method, doc]) => {
+          const parameters = [
+            ...pathParams(path),
+            ...(doc.auth === 'refreshCookie'
+              ? [{ name: 'X-Requested-With', in: 'header', required: true, schema: { type: 'string' } }]
+              : []),
+          ];
+          return [
+            method,
+            {
+              summary: doc.summary,
+              tags: [doc.tag],
+              ...(doc.auth && { security: [{ [doc.auth]: [] }] }),
+              ...(parameters.length > 0 && { parameters }),
+              ...(doc.body && { requestBody: { required: true, content: json(doc.body, 'input') } }),
+              responses: Object.fromEntries(
+                Object.entries(doc.responses).map(([status, r]) => [
+                  status,
+                  { description: r.description, ...(r.schema && { content: json(r.schema, 'output') }) },
+                ]),
+              ),
+            },
+          ];
+        }),
       ),
     ]),
   );
