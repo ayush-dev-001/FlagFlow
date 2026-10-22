@@ -10,6 +10,8 @@ const schema = z.object({
   JWT_ACCESS_SECRET: z.string().min(43, 'must be at least 32 random bytes (43+ base64url characters)'),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(7),
   DASHBOARD_ORIGIN: z.url(),
+  // Proxy hops in front of the API. 0 ignores X-Forwarded-For, so clients can't spoof their IP past rate limits.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   SMTP_URL: z.url({ protocol: /^smtps?$/ }),
   MAIL_FROM: z.string().min(3),
 });

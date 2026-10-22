@@ -31,8 +31,27 @@ export function deadRedis(): Redis {
   return redis;
 }
 
-export function testDeps(prisma: PrismaClient, redis: Redis): AppDeps {
-  return { env: { DASHBOARD_ORIGIN }, logger: silentLogger, prisma, redis };
+export const TEST_JWT_SECRET = 'test-secret-'.padEnd(64, 'x');
+
+export function testDeps(prisma: PrismaClient, redis: Redis, env: Partial<AppDeps['env']> = {}): AppDeps {
+  return {
+    env: {
+      DASHBOARD_ORIGIN,
+      JWT_ACCESS_SECRET: TEST_JWT_SECRET,
+      REFRESH_TOKEN_TTL_DAYS: 7,
+      TRUST_PROXY: 0,
+      ...env,
+    },
+    logger: silentLogger,
+    prisma,
+    redis,
+  };
+}
+
+/** Empties test Redis (DB 1) so rate-limit counters and sessions don't leak between tests. */
+export async function resetRedis(redis: Redis): Promise<void> {
+  if (redis.options.db !== 1) throw new Error(`Refusing to flush Redis DB ${redis.options.db}`);
+  await redis.flushdb();
 }
 
 /** Empties every table. Refuses to run against anything but a *_test database. */

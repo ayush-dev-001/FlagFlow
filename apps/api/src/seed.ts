@@ -1,11 +1,9 @@
 import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import bcrypt from 'bcryptjs';
+import { hashPassword } from './auth/passwords.js';
 import { z } from 'zod';
 import { createPrisma, type PrismaClient } from './db.js';
 import { Role } from './generated/prisma/client.js';
-
-export const BCRYPT_COST = 12;
 
 const DEMO_ORG = { slug: 'acme', name: 'Acme Inc.' };
 
@@ -56,7 +54,7 @@ export async function seed(prisma: PrismaClient, opts: SeedOptions): Promise<See
     if (existing) return existing;
     created.push(`user ${email}`);
     return prisma.user.create({
-      data: { email, ...data, passwordHash: await bcrypt.hash(password, BCRYPT_COST) },
+      data: { email, ...data, passwordHash: await hashPassword(password) },
     });
   };
 
