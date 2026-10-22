@@ -30,6 +30,18 @@ import {
   targetsBody,
   updateFlagBody,
 } from './flags/schemas.js';
+import { apiKeySummary, createApiKeyBody, updateOrgBody } from './org/routes.js';
+import { evaluateQuery } from './public/routes.js';
+
+const orgResponse = z.object({
+  organization: z.object({ id: z.uuid(), name: z.string(), slug: z.string() }),
+});
+const snapshotSchema = z.object({
+  version: z.number().int(),
+  flags: z.array(
+    z.object({ key: z.string(), enabled: z.boolean(), targetAll: z.boolean(), targets: z.array(z.string()) }),
+  ),
+});
 
 const flagResponse = z.object({ flag: flagDetail });
 
@@ -43,7 +55,7 @@ interface RouteDoc {
   body?: Schema;
   /** An object schema whose keys become optional query parameters. */
   query?: z.ZodObject;
-  auth?: 'bearer' | 'refreshCookie';
+  auth?: 'bearer' | 'refreshCookie' | 'apiKey';
   responses: Record<number, { description: string; schema?: Schema }>;
 }
 
@@ -245,6 +257,98 @@ const routes: Record<string, Record<string, RouteDoc>> = {
       responses: { 200: { description: 'Entries', schema: auditPage }, ...errors(400, 401, 403) },
     },
   },
+  '/api/org': {
+    get: {
+      summary: 'The organization (admin)',
+      tag: 'Organization',
+      auth: 'bearer',
+      responses: { 200: { description: 'Organization', schema: orgResponse }, ...errors(401, 403) },
+    },
+    patch: {
+      summary: 'Rename the organization (admin)',
+      tag: 'Organization',
+      auth: 'bearer',
+      body: updateOrgBody,
+      responses: { 200: { description: 'Updated', schema: orgResponse }, ...errors(400, 401, 403) },
+    },
+  },
+  '/api/org/api-keys': {
+    get: {
+      summary: 'API keys, without their secrets (admin)',
+      tag: 'Organization',
+      auth: 'bearer',
+      responses: {
+        200: { description: 'Keys', schema: z.object({ apiKeys: z.array(apiKeySummary) }) },
+        ...errors(401, 403),
+      },
+    },
+    post: {
+      summary: 'Create an API key; the full key is only in this response (admin)',
+      tag: 'Organization',
+      auth: 'bearer',
+      body: createApiKeyBody,
+      responses: {
+        201: {
+          description: 'Created',
+          schema: z.object({ apiKey: apiKeySummary.extend({ key: z.string() }) }),
+        },
+        ...errors(400, 401, 403, 409),
+      },
+    },
+  },
+  '/api/org/api-keys/{id}': {
+    delete: {
+      summary: 'Revoke an API key; open streams using it are closed (admin)',
+      tag: 'Organization',
+      auth: 'bearer',
+      responses: { 204: { description: 'Revoked' }, ...errors(401, 403, 404) },
+    },
+  },
+  '/v1/flags/evaluate': {
+    get: {
+      summary: 'Every flag evaluated for one end user',
+      tag: 'Public',
+      auth: 'apiKey',
+      query: evaluateQuery,
+      responses: {
+        200: {
+          description: 'Flag values',
+          schema: z.object({ version: z.number().int(), flags: z.record(z.string(), z.boolean()) }),
+        },
+        ...errors(400, 401, 429),
+      },
+    },
+  },
+  '/v1/flags/{key}/evaluate': {
+    get: {
+      summary: 'One flag for one end user (unknown flags are off)',
+      tag: 'Public',
+      auth: 'apiKey',
+      query: evaluateQuery,
+      responses: {
+        200: { description: 'Value', schema: z.object({ version: z.number().int(), enabled: z.boolean() }) },
+        ...errors(400, 401, 429),
+      },
+    },
+  },
+  '/v1/snapshot': {
+    get: {
+      summary: 'Full rule set, for local evaluation',
+      tag: 'Public',
+      auth: 'apiKey',
+      responses: { 200: { description: 'Snapshot', schema: snapshotSchema }, ...errors(401, 429) },
+    },
+  },
+  '/v1/stream': {
+    get: {
+      summary:
+        'Server-sent events: `snapshot` on connect, then `flag.updated` / `flag.deleted` (id = version). ' +
+        'Send Last-Event-ID to resume; `: ping` heartbeats every 25s.',
+      tag: 'Public',
+      auth: 'apiKey',
+      responses: { 200: { description: 'text/event-stream' }, ...errors(401, 429) },
+    },
+  },
 };
 
 const pathParams = (path: string) =>
@@ -302,6 +406,7 @@ export function buildOpenApi() {
       securitySchemes: {
         bearer: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
         refreshCookie: { type: 'apiKey', in: 'cookie', name: 'ff_refresh' },
+        apiKey: { type: 'apiKey', in: 'header', name: 'x-api-key' },
       },
     },
     paths,

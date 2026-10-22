@@ -15,9 +15,9 @@
     "apps/demo-web"
   ],
   "scripts": {
-    "dev": "npm run build -w packages/shared && concurrently -k -n api,dashboard,demo-api,demo-web -c blue,magenta,green,yellow \"npm run dev -w apps/api\" \"npm run dev -w apps/dashboard\" \"npm run dev -w apps/demo-api\" \"npm run dev -w apps/demo-web\"",
+    "dev": "npm run build -w packages/shared -w packages/flag-client && concurrently -k -n api,dashboard,demo-api,demo-web -c blue,magenta,green,yellow \"npm run dev -w apps/api\" \"npm run dev -w apps/dashboard\" \"npm run dev -w apps/demo-api\" \"npm run dev -w apps/demo-web\"",
     "build": "npm run build --workspaces --if-present",
-    "typecheck": "npm run build -w packages/shared && npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build -w packages/shared -w packages/flag-client && npm run typecheck --workspaces --if-present",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

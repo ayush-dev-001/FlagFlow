@@ -21,11 +21,18 @@ const bodyEmail = (req: Request): string => {
  * `scale` multiplies every limit; it is 1 everywhere except the local ZAP scan (see env.ts).
  */
 export function createLimiters(redis: Redis, scale = 1) {
-  const limiter = (name: string, limit: number, keyGenerator: (req: Request) => string) =>
+  const limiter = (
+    name: string,
+    limit: number,
+    keyGenerator: (req: Request) => string,
+    { onlyFailures = false } = {},
+  ) =>
     rateLimit({
       windowMs: MINUTE,
       limit: limit * scale,
       keyGenerator,
+      // Count only failed requests (status >= 400), e.g. bad API keys, so valid traffic is never throttled here.
+      skipSuccessfulRequests: onlyFailures,
       standardHeaders: 'draft-8',
       legacyHeaders: false,
       // Fail closed: if Redis is down, limited routes refuse rather than run unlimited.
@@ -49,6 +56,10 @@ export function createLimiters(redis: Redis, scale = 1) {
     publicAuth: limiter('auth', 20, ipKey),
     /** 300 per minute per user on authenticated routes. */
     api: limiter('api', 300, (req) => req.auth?.userId ?? ipKey(req)),
+    /** 600 per minute per API key on /v1 (runs after the key is verified). */
+    publicApi: limiter('v1', 600, (req) => req.apiKey?.keyId ?? ipKey(req)),
+    /** 30 rejected /v1 requests per minute per IP: slows API-key guessing. */
+    publicApiFailures: limiter('v1-fail', 30, ipKey, { onlyFailures: true }),
   };
 }
 

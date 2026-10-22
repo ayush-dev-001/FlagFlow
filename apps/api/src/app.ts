@@ -15,6 +15,10 @@ import { healthRouter } from './health.js';
 import type { Logger } from './logger.js';
 import type { Mailer } from './mailer.js';
 import { docsRouter } from './openapi.js';
+import { orgRouter } from './org/routes.js';
+import { publicRouter } from './public/routes.js';
+import { snapshotStore } from './public/snapshots.js';
+import { StreamHub, type StreamOptions } from './public/stream.js';
 import { createLimiters } from './rateLimit.js';
 import type { Redis } from './redis.js';
 import { teamRouter } from './team/routes.js';
@@ -28,13 +32,14 @@ export interface AppDeps {
   prisma: PrismaClient;
   redis: Redis;
   mailer: Mailer;
+  streamOptions?: StreamOptions;
 }
 
 const BODY_LIMIT = '100kb';
 // A caller-supplied request id is reused only if it is short and plain, so it can't inject into logs or headers.
 const SAFE_REQUEST_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
-export function createApp({ env, logger, prisma, redis, mailer }: AppDeps): Express {
+export function createApp({ env, logger, prisma, redis, mailer, streamOptions }: AppDeps): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY);
@@ -86,8 +91,23 @@ export function createApp({ env, logger, prisma, redis, mailer }: AppDeps): Expr
   app.use('/api/flags', flagsRouter);
   app.use('/api/end-users', endUsersRouter);
   app.use('/api/audit-logs', auditRouter);
+  app.use('/api/org', orgRouter({ prisma, redis, limiters, jwtSecret }));
+
+  const snapshots = snapshotStore(prisma, redis, logger);
+  const streams = new StreamHub(redis, snapshots, logger, streamOptions);
+  (app.locals as AppLocals).streams = streams;
+  app.use('/v1', publicRouter({ prisma, redis, logger, limiters, snapshots, streams }));
 
   app.use(notFound);
   app.use(errorHandler);
   return app;
+}
+
+interface AppLocals {
+  streams?: StreamHub;
+}
+
+/** Ends open SSE streams and the stream subscriber. Call before closing Redis. */
+export async function closeApp(app: Express) {
+  await (app.locals as AppLocals).streams?.close();
 }

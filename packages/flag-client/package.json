@@ -15,5 +15,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit"
+  },
+  "description": "Node client for FlagFlow: snapshot + SSE stream + local evaluation",
+  "dependencies": {
+    "@flagflow/shared": "0.0.0"
   }
 }

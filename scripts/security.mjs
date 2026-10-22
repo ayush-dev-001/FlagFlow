@@ -140,12 +140,25 @@ async function zapScan() {
       console.error(`could not register the scan account: ${reg.status}`);
       return false;
     }
-    const { accessToken } = await reg.json();
+    const { accessToken, apiKey } = await reg.json();
+    const { key: scanKey } = apiKey;
 
-    // Logout would revoke the scan token mid-scan, so it is left out of the spec ZAP is given.
+    // Two passes, because ZAP sends one auth header per run: the dashboard API with the admin's bearer
+    // token, then /v1 with the org's API key. Logout would revoke the scan token mid-scan, and /v1/stream
+    // never ends (ZAP would hang on it), so both stay out of the specs; the attack suite covers them.
     const spec = await (await fetch(`${local}/api/docs`)).json();
-    delete spec.paths['/api/auth/logout'];
-    writeFileSync(join(out, 'openapi.json'), JSON.stringify(spec));
+    const only = (keep) => ({
+      ...spec,
+      paths: Object.fromEntries(Object.entries(spec.paths).filter(([path]) => keep(path))),
+    });
+    writeFileSync(
+      join(out, 'openapi-dashboard.json'),
+      JSON.stringify(only((p) => p.startsWith('/api/') && p !== '/api/auth/logout')),
+    );
+    writeFileSync(
+      join(out, 'openapi-public.json'),
+      JSON.stringify(only((p) => p.startsWith('/v1/') && p !== '/v1/stream')),
+    );
 
     // Fail fast if containers can't reach the host API; otherwise ZAP retries for hours and reports nothing.
     const reach = spawnSync(
@@ -166,72 +179,80 @@ async function zapScan() {
       return false;
     }
 
-    // ZAP's packaged scans add this header to every request. (A `-z` replacer rule doesn't work here:
-    // ZAP splits the option string on spaces, which cuts "Bearer <token>" in two.)
-    const r = spawnSync(
-      'docker',
-      [
-        'run',
-        '--rm',
-        '-e',
-        'ZAP_AUTH_HEADER=Authorization',
-        '-e',
-        `ZAP_AUTH_HEADER_VALUE=Bearer ${accessToken}`,
-        '-v',
-        `${out}:/zap/wrk:rw`,
-        ZAP,
-        'zap-api-scan.py',
-        '-t',
-        '/zap/wrk/openapi.json',
-        '-f',
-        'openapi',
-        '-O',
-        target,
-        // Cap the active scan so a run stays well inside the 15-minute access token and a usable gate time.
-        '-z',
-        '-config scanner.maxScanDurationInMins=5 -config scanner.maxRuleDurationInMins=1',
-        '-J',
-        'zap-report.json',
-        '-r',
-        'zap-report.html',
-        '-I',
-      ],
-      { stdio: 'inherit', env: { ...process.env, MSYS_NO_PATHCONV: '1' } },
-    );
-    if (r.status !== 0) {
-      console.error(`zap-api-scan exited with ${r.status}`);
-      return false;
+    const passes = [
+      { name: 'dashboard', header: 'Authorization', value: `Bearer ${accessToken}` },
+      { name: 'public', header: 'x-api-key', value: scanKey },
+    ];
+    const alerts = [];
+    for (const pass of passes) {
+      console.log(`\n  ZAP pass: ${pass.name}`);
+      // ZAP's packaged scans add this header to every request. (A `-z` replacer rule doesn't work here:
+      // ZAP splits the option string on spaces, which cuts "Bearer <token>" in two.)
+      const r = spawnSync(
+        'docker',
+        [
+          'run',
+          '--rm',
+          '-e',
+          `ZAP_AUTH_HEADER=${pass.header}`,
+          '-e',
+          `ZAP_AUTH_HEADER_VALUE=${pass.value}`,
+          '-v',
+          `${out}:/zap/wrk:rw`,
+          ZAP,
+          'zap-api-scan.py',
+          '-t',
+          `/zap/wrk/openapi-${pass.name}.json`,
+          '-f',
+          'openapi',
+          '-O',
+          target,
+          // Cap each active scan so the gate stays usable and well inside the 15-minute access token.
+          '-z',
+          '-config scanner.maxScanDurationInMins=4 -config scanner.maxRuleDurationInMins=1',
+          '-J',
+          `zap-${pass.name}.json`,
+          '-r',
+          `zap-${pass.name}.html`,
+          '-I',
+        ],
+        { stdio: 'inherit', env: { ...process.env, MSYS_NO_PATHCONV: '1' } },
+      );
+      if (r.status !== 0) {
+        console.error(`zap-api-scan (${pass.name}) exited with ${r.status}`);
+        return false;
+      }
+      if (apiExit) {
+        console.error(`the API process died during the ${pass.name} scan: ${JSON.stringify(apiExit)}`);
+        return false;
+      }
+      const report = JSON.parse(readFileSync(join(out, `zap-${pass.name}.json`), 'utf8'));
+      alerts.push(...report.site.flatMap((s) => s.alerts.map((a) => ({ ...a, pass: pass.name }))));
     }
-    if (apiExit) {
-      console.error(`the API process died during the scan: ${JSON.stringify(apiExit)}`);
-      return false;
-    }
-    // Prove the scan was authenticated: the scan token must still work afterwards.
-    let probeStatus;
-    for (let attempt = 1; attempt <= 3 && probeStatus === undefined; attempt++) {
-      try {
-        const probe = await fetch(`${local}/api/team/members`, {
-          headers: { authorization: `Bearer ${accessToken}`, connection: 'close' },
-        });
-        probeStatus = probe.status;
-      } catch (err) {
-        console.error(`post-scan probe attempt ${attempt} failed: ${err.cause?.code ?? err}`);
-        await new Promise((r) => setTimeout(r, 1000));
+
+    // Prove both scans were authenticated: the credentials must still work afterwards.
+    const probes = [
+      ['/api/team/members', { authorization: `Bearer ${accessToken}` }],
+      ['/v1/snapshot', { 'x-api-key': scanKey }],
+    ];
+    for (const [path, headers] of probes) {
+      let status;
+      for (let attempt = 1; attempt <= 3 && status === undefined; attempt++) {
+        try {
+          status = (await fetch(`${local}${path}`, { headers: { ...headers, connection: 'close' } })).status;
+        } catch (err) {
+          console.error(`post-scan probe of ${path}, attempt ${attempt}, failed: ${err.cause?.code ?? err}`);
+          await new Promise((r) => setTimeout(r, 1000));
+        }
+      }
+      if (status !== 200) {
+        console.error(
+          `post-scan probe of ${path} got ${status ?? 'no response'}; that pass was not authenticated`,
+        );
+        return false;
       }
     }
-    if (probeStatus === undefined) {
-      const health = await fetch(`${local}/api/health`)
-        .then((r) => r.text())
-        .catch((e) => String(e.cause?.code ?? e));
-      console.error(`API unreachable after the scan (health: ${health})`);
-      return false;
-    }
-    if (probeStatus !== 200) {
-      console.error(`scan token no longer works (${probeStatus}); authenticated routes were not covered`);
-      return false;
-    }
-    const report = JSON.parse(readFileSync(join(out, 'zap-report.json'), 'utf8'));
-    const alerts = report.site.flatMap((s) => s.alerts);
+
     const byRisk = Object.groupBy(alerts, (a) => a.riskdesc.split(' ')[0]);
     console.log(
       `ZAP alerts: ${
@@ -240,7 +261,9 @@ async function zapScan() {
           .join(', ') || 'none'
       }`,
     );
-    for (const a of alerts) console.log(`  [${a.riskdesc}] ${a.name} (${a.instances.length} instance(s))`);
+    for (const a of alerts) {
+      console.log(`  [${a.pass}] [${a.riskdesc}] ${a.name} (${a.instances.length} instance(s))`);
+    }
     return !alerts.some((a) => a.riskcode === '3');
   } finally {
     api.kill();

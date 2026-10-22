@@ -1,2 +1,3 @@
-// Snapshot fetch, SSE subscription and local evaluation arrive in phase 5.
-export const FLAG_CLIENT_VERSION = '0.0.0';
+export { createFlagClient, FlagClient, FlagClientAuthError, type FlagClientOptions } from './client.js';
+export { parseSse, type SseMessage } from './sse.js';
+export type { FlagEvent, Snapshot } from '@flagflow/shared';
