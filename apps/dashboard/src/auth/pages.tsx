@@ -5,6 +5,8 @@ import { ApiError, api } from '../api/client';
 import { Alert, Button, Field, Spinner } from '../ui/primitives';
 import { AuthLayout } from './AuthLayout';
 import { useAuth } from './AuthProvider';
+import type { MirrorStatus } from './illustration/LoginIllustration';
+import { useFormMirror } from './illustration/useFormMirror';
 
 /** A text field's value; FormData.get can also return a File. */
 const text = (data: FormData, name: string) => {
@@ -18,6 +20,7 @@ const linkClass = 'font-semibold text-lime hover:underline';
 function useFormError() {
   const [error, setError] = useState<ApiError | null>(null);
   return {
+    failed: error !== null,
     error,
     setError: (e: unknown) =>
       setError(e instanceof ApiError ? e : new ApiError(0, 'UNKNOWN', 'Something went wrong. Try again.')),
@@ -27,11 +30,20 @@ function useFormError() {
   };
 }
 
+/** A submit's progress, plus the illustration mirroring the form it belongs to. */
+function useSubmit(failed: boolean) {
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const status: MirrorStatus = done ? 'success' : submitting ? 'submitting' : failed ? 'error' : 'idle';
+  const { mirror, handlers } = useFormMirror(status);
+  return { submitting, setSubmitting, setDone, mirror, handlers };
+}
+
 export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const form = useFormError();
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, setSubmitting, setDone, mirror, handlers } = useSubmit(form.failed);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -40,6 +52,7 @@ export function LoginPage() {
     form.clear();
     try {
       await login(text(data, 'email'), text(data, 'password'));
+      setDone(true);
       void navigate('/', { replace: true });
     } catch (err) {
       form.setError(err);
@@ -51,6 +64,7 @@ export function LoginPage() {
   return (
     <AuthLayout
       title="Welcome Back"
+      mirror={mirror}
       subtitle={
         <>
           New to FlagFlow?{' '}
@@ -60,7 +74,7 @@ export function LoginPage() {
         </>
       }
     >
-      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={(e) => void onSubmit(e)} {...handlers} className="flex flex-col gap-4" noValidate>
         {form.banner && <Alert>{form.banner}</Alert>}
         <Field
           label="Email"
@@ -81,9 +95,7 @@ export function LoginPage() {
         <Button type="submit" size="lg" loading={submitting} className="mt-2 w-full">
           Log in
         </Button>
-        <p className="text-center text-[13px] text-subtle">
-          Joining a team? Use the invite link in your email.
-        </p>
+        <p className="text-[13px] text-subtle">Joining a team? Use the invite link in your email.</p>
       </form>
     </AuthLayout>
   );
@@ -93,7 +105,7 @@ export function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const form = useFormError();
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, setSubmitting, setDone, mirror, handlers } = useSubmit(form.failed);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -107,6 +119,7 @@ export function RegisterPage() {
         password: text(data, 'password'),
         organizationName: text(data, 'organizationName'),
       });
+      setDone(true);
       void navigate('/welcome', { replace: true });
     } catch (err) {
       form.setError(err);
@@ -118,6 +131,7 @@ export function RegisterPage() {
   return (
     <AuthLayout
       title="Create Your Organization"
+      mirror={mirror}
       subtitle={
         <>
           Already have an account?{' '}
@@ -127,7 +141,7 @@ export function RegisterPage() {
         </>
       }
     >
-      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={(e) => void onSubmit(e)} {...handlers} className="flex flex-col gap-4" noValidate>
         {form.banner && <Alert>{form.banner}</Alert>}
         <Field
           label="Organization name"
@@ -173,7 +187,7 @@ export function InvitePage() {
   const { acceptInvite, status, user, logout } = useAuth();
   const navigate = useNavigate();
   const form = useFormError();
-  const [submitting, setSubmitting] = useState(false);
+  const { submitting, setSubmitting, setDone, mirror, handlers } = useSubmit(form.failed);
   const preview = useQuery({
     queryKey: ['invite', token],
     queryFn: () => api<InvitePreview>(`/auth/invites/${encodeURIComponent(token)}`, { auth: false }),
@@ -187,6 +201,7 @@ export function InvitePage() {
     form.clear();
     try {
       await acceptInvite(token, { name: text(data, 'name'), password: text(data, 'password') });
+      setDone(true);
       void navigate('/', { replace: true });
     } catch (err) {
       form.setError(err);
@@ -241,13 +256,14 @@ export function InvitePage() {
   return (
     <AuthLayout
       title={`Join ${invite.organization.name}`}
+      mirror={mirror}
       subtitle={
         <>
           You're joining as {role} with <span className="text-text">{invite.email}</span>.
         </>
       }
     >
-      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={(e) => void onSubmit(e)} {...handlers} className="flex flex-col gap-4" noValidate>
         {form.banner && <Alert>{form.banner}</Alert>}
         <Field label="Your name" name="name" autoComplete="name" required error={form.field('name')} />
         <Field

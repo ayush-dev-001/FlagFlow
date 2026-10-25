@@ -58,6 +58,33 @@ test('log in, and a wrong password shows a plain error', async ({ page, consoleE
   await expect(page.getByText(account.org).filter({ visible: true })).toBeVisible();
 });
 
+test('the illustration mirrors the login form on wide screens', async ({ page, consoleErrors }, info) => {
+  const art = page.getByTestId('auth-illustration');
+  await page.goto('/login');
+  if (info.project.name.includes('mobile')) {
+    await expect(art).toBeHidden();
+    return;
+  }
+  await expect(art).toBeVisible();
+  // Field lines fill with the typed length; the password value itself never reaches the drawing.
+  const widths = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('clipPath[id^="ffl-field"] rect')].map((r) =>
+        parseFloat(r.getAttribute('width') ?? '0'),
+      ),
+    );
+  await expect.poll(widths).toEqual([0, 0]);
+  await page.getByLabel('Email').fill('someone@example.com');
+  await page.getByLabel('Password').fill('not-the-password');
+  await expect.poll(async () => (await widths()).every((w) => w > 0)).toBe(true);
+  await expect(art).not.toContainText('not-the-password');
+
+  consoleErrors.allow(/status of 401/);
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await expect(page.getByRole('alert')).toContainText('Invalid email or password');
+  await expect(art).toHaveAttribute('data-status', 'error');
+});
+
 test('register validates fields with messages next to them', async ({ page, consoleErrors }) => {
   consoleErrors.allow(/status of 400/);
   await page.goto('/register');

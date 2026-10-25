@@ -178,7 +178,7 @@ components:
 
 FlagFlow is one world from the first pixel of the public home page (`apps/dashboard/src/landing/LandingPage.tsx`, the owner's binding visual reference) to the last toggle in the signed-in app. The ground is near-black ink. Content sits on slightly lifted near-black cards with white hairlines. One colour carries meaning: lime. It marks something that is on, the action that will make something go, and the thing that has focus. Nothing else is lime, so a glance at any screen tells you what is live.
 
-The voice is bold and tight. Headlines are Inter Tight at weight 700, Title Case, with heavy negative tracking. Reading text is white at 55 to 60% opacity. Geist Mono shows up only for strings a person would copy into code. The home page carries the richest version of the world: a floating glass header, side rails, faint arcs, lime sparkles, and lime glows bleeding up from the lower corners. The auth pages reuse that header and atmosphere unchanged. The signed-in shell keeps only the two corner glows, faint enough to work under.
+The voice is bold and tight. Headlines are Inter Tight at weight 700, Title Case, with heavy negative tracking. Reading text is white at 55 to 60% opacity. Geist Mono shows up only for strings a person would copy into code. The home page carries the richest version of the world: a floating glass header, side rails, faint arcs, lime sparkles, and lime glows bleeding up from the lower corners. The auth pages drop the header and split into form and illustration. The signed-in shell keeps only the two corner glows, faint enough to work under.
 
 Motion uses one exponential ease-out. Content rises a few pixels as it arrives, on-states settle in, and everything honours `prefers-reduced-motion`.
 
@@ -213,7 +213,7 @@ Near-black ink with neutral grey-green undertones, white type at reading opaciti
 
 - **Ink** (#0b0d0c): the page ground everywhere, the text on lime and white fills, and the input well (ink at 70%).
 - **Sidebar Ink** (#101312): the app sidebar and mobile drawer, opaque.
-- **Card Ink** (#151817): auth form card, app panels, the API key card, pricing cards.
+- **Card Ink** (#151817): the auth illustration panel, app panels, the API key card, pricing cards.
 - **Feature Ink** (#161918): home page feature cards.
 - **Raised Ink** (#1c1f1e): the billing toggle track and the skip link.
 - **Hover Ink** (#222624): hover for small icon buttons and Log out in the shell.
@@ -244,10 +244,10 @@ Near-black ink with neutral grey-green undertones, white type at reading opaciti
 ### Hierarchy
 
 - **Display** (700, clamp(2.25rem, min(5.76vw, 8.1vh), 4.725rem), 1.02, -0.055em): the home page hero and section headlines.
-- **Headline** (700, clamp(2.25rem, 5vw, 3.4rem), 1.02, -0.055em): auth page titles ("Welcome Back").
+- **Headline** (700, clamp(2.25rem, 4vw, 3rem), 1.02, -0.055em): auth page titles ("Welcome Back").
 - **Title** (700, clamp(2rem, 3vw, 2.75rem), 1.04, -0.05em): app page titles in the page header, and the 404 and error titles.
 - **Card Title** (600, 22px, -0.03em): titles inside cards ("Not Available Yet", plan names). Smaller card headings go to 19px at -0.02em.
-- **Lead** (400, 17px, 1.375): auth sublines and home page section leads, in white at 55%. Page header descriptions use 16px white/55 at max 60ch.
+- **Lead** (400, 17px, 1.375): home page section leads, in white at 55%; auth sublines use 16px. Page header descriptions use 16px white/55 at max 60ch.
 - **Body** (400, 15px): field text and labels (labels at 500), alerts, nav items (500), working copy.
 - **Label** (500 to 600, 13px): state pills, hints, errors, nav group titles. Sentence case at normal tracking.
 - **Mono** (400, 14px, 1.625, tabular numbers): API keys, flag keys, user IDs, env vars.
@@ -262,17 +262,16 @@ Near-black ink with neutral grey-green undertones, white type at reading opaciti
 
 The app shell has a sticky 248px sidebar from 1024px up. Below that there is a 56px sticky top bar (ink at 80%, 24px blur) with a menu button that opens the sidebar as a drawer (min(80vw, 280px)) over an ink/75 scrim. The main column is capped at 1152px with 16px side padding (40px from 640px) and 40px vertical padding (56px from 1024px). The page header sits 40px above the content and stacks on mobile. From 640px its actions align to the right, on the title's baseline.
 
-Auth pages are centred. The site header comes first, then the title block (max 480px, top offset 56px, or 8vh on large screens), then a 440px form card 40px below. The card's padding is 24px, or 32px from 640px. Fields stack at a 16px gap and the submit button is full width.
+Auth pages have no site header (owner decision, 2026-10-25): two sections on screens from 1024px. On the left, the wordmark (a link home) sits top-left; a 400px column, centred vertically, holds a bold Title Case headline with a white/55 subline and then the form directly on ink: fields at a 16px gap, a full-width lime submit and a left-aligned 13px note. One lime glow (25%, 120px blur; 15% and smaller on phones) bleeds from the lower-left corner. On the right, a 28px-radius #151817 panel inset 12px holds two faint concentric arcs, two lime sparkles, a lime pool (30%, 110px blur) under the desk, and the owner-supplied desk illustration (Login.svg, recoloured to ink, greys, white and lime by scripts/build-login-art.mjs). Its monitor mirrors the form: line 1 fills with the length of all text fields together, line 2 with the password length (lengths only, never values), a caret blinks on the focused line, the button pulses while submitting, and a failed submit turns the whole screen flame #ff5a24 and shakes it, the lines and button staying ink. Below 1024px the panel is dropped and the form stands alone.
 
 The site header floats 12px from the top. It is 64px tall and capped at 900px. Its nav links hide below 768px, and Sign in hides below 640px. Home page content is capped at 1116px and drawn at 90% of the default Tailwind scale (scoped to the home page only). Sparkles show from 768px up so they never cross a headline on a phone.
 
 ## Elevation & Depth
 
-Depth comes mostly from tone: ink ground, a slightly lifted card ink, and white hairlines. Light comes from atmosphere, not from shadows on components. Lime glows are blurred circles that bleed up from the lower corners. They are strong on the home page and auth pages (lime at 45% and 25%, about 120px blur) and faint behind the signed-in shell (lime at 13% and 7%).
+Depth comes mostly from tone: ink ground, a slightly lifted card ink, and white hairlines. Light comes from atmosphere, not from shadows on components. Lime glows are blurred circles that bleed up from the lower corners. They are strong on the home page and auth pages (one corner there, plus the pool in the illustration panel) (lime at 45% and 25%, about 120px blur) and faint behind the signed-in shell (lime at 13% and 7%).
 
 ### Shadow Vocabulary
 
-- **Form card drop** (`box-shadow: 0 30px 80px -40px rgb(0 0 0 / 0.9)`): the auth form card only, to lift it off the atmosphere.
 - **Live dot glow** (`box-shadow: 0 0 10px #c4f04a`): the Live state dot and other on-dots. It is a light, not a shadow.
 - **Focus halo** (`box-shadow: 0 0 0 3px rgb(196 240 74 / 0.18)`): focused inputs, with the border at lime 70%.
 
@@ -284,7 +283,7 @@ Depth comes mostly from tone: ink ground, a slightly lifted card ink, and white 
 
 ## Shapes
 
-Corners come in three steps. Controls are 9px (buttons, inputs, nav items, code wells, alerts). Panels and chrome are 16px (the floating site header, feature cards). Cards are 20px (the auth form card, app panels, the API key card, home page showcase and stat cards). Pills and dots are fully round. The Mark is a 14px lime square with 3px corners. On the home page, hairline rails, concentric faint arcs and lime cross-shaped sparkles add geometry around the hero.
+Corners come in three steps. Controls are 9px (buttons, inputs, nav items, code wells, alerts). Panels and chrome are 16px (the floating site header, feature cards). Cards are 20px (app panels, the API key card, home page showcase and stat cards). Pills and dots are fully round. The Mark is a 14px lime square with 3px corners. On the home page, hairline rails, concentric faint arcs and lime cross-shaped sparkles add geometry around the hero.
 
 **The Three Radii Rule.** Use 9px for controls, 16px for panels and 20px for cards. Other values are reference-page exceptions, not steps on the scale.
 
@@ -311,7 +310,7 @@ Confident, flat and quick.
 
 - **Corner Style:** 20px.
 - **Background:** Card Ink (#151817).
-- **Shadow Strategy:** none, except the auth form card drop (see Elevation).
+- **Shadow Strategy:** none.
 - **Border:** 1px white at 6%.
 - **Internal Padding:** 24px, or 32px from 640px. Empty states use 28px by 48px.
 - **Icon tile:** 47px square, white at 8%, with a 24px icon at 1.5 stroke.
@@ -332,15 +331,15 @@ Confident, flat and quick.
 
 ### Site Header (signature)
 
-A floating glass bar: 64px tall, 900px max, 16px radius, white/3.5% fill, white/5 border, medium backdrop blur. It holds the 20px bold wordmark with the lime Mark, nav links at 14px white/60, Sign in at white/70, and a white Get started button (9px, ink text) that turns lime on hover. It is shared by the home page and every auth page.
+A floating glass bar: 64px tall, 900px max, 16px radius, white/3.5% fill, white/5 border, medium backdrop blur. It holds the 20px bold wordmark with the lime Mark, nav links at 14px white/60, Sign in at white/70, and a white Get started button (9px, ink text) that turns lime on hover. It is the home page's only; auth pages show just the wordmark.
 
 ### Site Atmosphere (signature)
 
-Two white/5 vertical rails at 17% from each edge, two concentric faint arcs (white/6 and white/4), two lime cross sparkles from 768px up, and lime glows in the lower corners. The auth pages use it unchanged.
+Two white/5 vertical rails at 17% from each edge, two concentric faint arcs (white/6 and white/4), two lime cross sparkles from 768px up, and lime glows in the lower corners. The auth pages do not use it (see Layout).
 
 ### Motion
 
-One ease: cubic-bezier(0.16, 1, 0.3, 1). Durations are 160ms, 240ms and 420ms. Page content rises 6px. Hero and auth blocks rise 14px over 700ms, staggered by 80ms. A spring (stiffness 520, damping 38) is used only for things that settle, such as a toggle knob. Reduced motion keeps opacity and drops transforms.
+One ease: cubic-bezier(0.16, 1, 0.3, 1). Durations are 160ms, 240ms and 420ms. Page content rises 6px. Hero and auth blocks rise 14px over 700ms, staggered by 80ms. A spring (stiffness 520, damping 38) is used only for things that settle, such as a toggle knob. Reduced motion keeps opacity and drops transforms. The auth illustration: field lines fill over 250ms, the screen tint over 350ms, the error shake runs 450ms, the avatar bobs on a 3s loop and the drawing keeps its own SVG loops; under reduced motion the shake, bob and caret blink stop and the SVG loops are paused.
 
 ## Do's and Don'ts
 
@@ -352,7 +351,7 @@ One ease: cubic-bezier(0.16, 1, 0.3, 1). Durations are 160ms, 240ms and 420ms. P
 - **Do** use flame (#ff5a24) for danger and errors only.
 - **Do** set headlines in Inter Tight bold Title Case, tracked -0.04 to -0.055em, with reading text at white 55 to 60%.
 - **Do** keep to three radii: 9px buttons, 16px panels, 20px cards.
-- **Do** give every auth page the site header and the hero atmosphere.
+- **Do** give every auth page the two-section layout: form left, the mirroring illustration right, no site header.
 - **Do** keep a primary button neutral (white 6% fill, white 40% text) while it is disabled.
 - **Do** show landing photographs in greyscale, and give every shipped raster a `.webp.json` provenance sidecar (the four home photos are free-license stock).
 

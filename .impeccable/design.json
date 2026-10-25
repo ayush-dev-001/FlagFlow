@@ -35,7 +35,6 @@
       "mono": { "displayName": "Mono", "purpose": "Keys and IDs only." }
     },
     "shadows": [
-      { "name": "form-card-drop", "value": "0 30px 80px -40px rgb(0 0 0 / 0.9)", "purpose": "The auth form card only." },
       { "name": "live-dot-glow", "value": "0 0 10px #c4f04a", "purpose": "On-dots such as the Live state dot. A light, not a shadow." },
       { "name": "focus-halo", "value": "0 0 0 3px rgb(196 240 74 / 0.18)", "purpose": "Focused inputs, with the border at lime 70%." },
       { "name": "atmosphere-glow", "value": "lime 45% and 25% circles, ~120px blur, lower corners (signed-in shell: 13% and 7%)", "purpose": "Ambient light on the home, auth and app grounds." }
@@ -47,7 +46,7 @@
       { "name": "duration-base", "value": "240ms", "purpose": "Content rise and drawer slide." },
       { "name": "duration-slow", "value": "420ms", "purpose": "Larger arrivals." },
       { "name": "rise", "value": "opacity 0 to 1, translateY 6px to 0; exit -4px", "purpose": "App content arriving." },
-      { "name": "reveal", "value": "opacity 0 to 1, translateY 14px to 0, 700ms, 80ms stagger", "purpose": "Home hero and auth title and card." },
+      { "name": "reveal", "value": "opacity 0 to 1, translateY 14px to 0, 700ms, 80ms stagger", "purpose": "Home hero, auth title, form and illustration panel." },
       { "name": "spring-settle", "value": "spring stiffness 520, damping 38, mass 0.8", "purpose": "Things that settle, such as a toggle knob." },
       { "name": "key-resolve", "value": "masked to real characters left to right over 700ms", "purpose": "The one-time API key reveal." }
     ],
@@ -126,14 +125,14 @@
       "name": "Site Header",
       "kind": "nav",
       "refersTo": "site-header",
-      "description": "Signature floating glass bar shared by the home page and all auth pages.",
+      "description": "Signature floating glass bar on the home page. Auth pages show only the wordmark.",
       "html": "<nav class=\"ds-site\"><a class=\"ds-site-brand\" href=\"#\"><span class=\"ds-mark\"></span>FlagFlow</a><a class=\"ds-site-link\" href=\"#\">Product</a><a class=\"ds-site-link\" href=\"#\">Docs</a><a class=\"ds-site-cta\" href=\"#\">Get started</a></nav>",
       "css": ".ds-site{display:flex;align-items:center;gap:24px;height:64px;max-width:900px;padding:0 16px;border:1px solid rgb(255 255 255/0.05);border-radius:16px;background:rgb(255 255 255/0.035);backdrop-filter:blur(12px);font-family:'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif}.ds-site-brand{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;letter-spacing:-0.025em;color:#fff;text-decoration:none}.ds-mark{width:14px;height:14px;border-radius:3px;background:#c4f04a}.ds-site-link{font-size:14px;color:rgb(255 255 255/0.6);text-decoration:none;transition:color 150ms}.ds-site-link:hover{color:#fff}.ds-site-cta{margin-left:auto;padding:10px 20px;border-radius:9px;background:#fff;color:#0b0d0c;font-size:14px;font-weight:600;text-decoration:none;transition:background-color 150ms}.ds-site-cta:hover{background:#c4f04a}.ds-site a:focus-visible{outline:2px solid #c4f04a;outline-offset:2px}"
     }
   ],
   "narrative": {
     "northStar": "Lime Is On",
-    "overview": "FlagFlow is one world from the first pixel of the public home page (`apps/dashboard/src/landing/LandingPage.tsx`, the owner's binding visual reference) to the last toggle in the signed-in app. The ground is near-black ink. Content sits on slightly lifted near-black cards with white hairlines. One colour carries meaning: lime. It marks something that is on, the action that will make something go, and the thing that has focus. Nothing else is lime, so a glance at any screen tells you what is live.\n\nThe voice is bold and tight. Headlines are Inter Tight at weight 700, Title Case, with heavy negative tracking. Reading text is white at 55 to 60% opacity. Geist Mono shows up only for strings a person would copy into code. The home page carries the richest version of the world: a floating glass header, side rails, faint arcs, lime sparkles, and lime glows bleeding up from the lower corners. The auth pages reuse that header and atmosphere unchanged. The signed-in shell keeps only the two corner glows, faint enough to work under.\n\nMotion uses one exponential ease-out. Content rises a few pixels as it arrives, on-states settle in, and everything honours `prefers-reduced-motion`.",
+    "overview": "FlagFlow is one world from the first pixel of the public home page (`apps/dashboard/src/landing/LandingPage.tsx`, the owner's binding visual reference) to the last toggle in the signed-in app. The ground is near-black ink. Content sits on slightly lifted near-black cards with white hairlines. One colour carries meaning: lime. It marks something that is on, the action that will make something go, and the thing that has focus. Nothing else is lime, so a glance at any screen tells you what is live.\n\nThe voice is bold and tight. Headlines are Inter Tight at weight 700, Title Case, with heavy negative tracking. Reading text is white at 55 to 60% opacity. Geist Mono shows up only for strings a person would copy into code. The home page carries the richest version of the world: a floating glass header, side rails, faint arcs, lime sparkles, and lime glows bleeding up from the lower corners. The auth pages drop the header and split into the form and a panel holding the owner's desk illustration, whose monitor mirrors the form. The signed-in shell keeps only the two corner glows, faint enough to work under.\n\nMotion uses one exponential ease-out. Content rises a few pixels as it arrives, on-states settle in, and everything honours `prefers-reduced-motion`.",
     "keyCharacteristics": [
       "Ink ground (#0b0d0c) with near-black cards and white hairlines at 6 to 12%.",
       "Lime (#c4f04a) only for on, go and focus. Ink text on lime fills.",
@@ -160,7 +159,7 @@
       "Do use flame (#ff5a24) for danger and errors only.",
       "Do set headlines in Inter Tight bold Title Case, tracked -0.04 to -0.055em, with reading text at white 55 to 60%.",
       "Do keep to three radii: 9px buttons, 16px panels, 20px cards.",
-      "Do give every auth page the site header and the hero atmosphere.",
+      "Do give every auth page the two-section layout: form left, the mirroring illustration right, no site header.",
       "Do keep a primary button neutral (white 6% fill, white 40% text) while it is disabled.",
       "Do show landing photographs in greyscale, and give every shipped raster a `.webp.json` provenance sidecar (the four home photos are free-license stock)."
     ],
