@@ -10,5 +10,7 @@ paths = [
   '''(^|/)\.claude/''',
   '''(^|/)\.agents/''',
   '''(^|/)\.aider-desk/''',
+  # Impeccable's local roll cache: its "key" is a design-roll reproduction id, not a credential.
+  '''(^|/)\.impeccable/questions/''',
   '''(^|/)\.env$''',
 ]

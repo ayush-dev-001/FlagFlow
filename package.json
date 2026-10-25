@@ -26,15 +26,19 @@
     "security": "node scripts/security.mjs",
     "setup:env": "node scripts/setup-env.mjs",
     "db:migrate": "npm run db:migrate -w apps/api",
-    "db:seed": "npm run db:seed -w apps/api"
+    "db:seed": "npm run db:seed -w apps/api",
+    "e2e": "playwright test",
+    "links": "linkinator http://localhost:4173 --recurse"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "1.64.0",
     "@types/node": "^24.19.2",
     "concurrently": "^10.0.6",
     "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
+    "linkinator": "8.1.0",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
