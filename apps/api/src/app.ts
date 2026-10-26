@@ -62,7 +62,24 @@ export function createApp({ env, logger, prisma, redis, mailer, streamOptions }:
       },
     }),
   );
-  app.use(helmet());
+  // The dashboard is served from here too and loads nothing from other origins: fonts and styles are
+  // self-hosted, so the CSP drops helmet's default `https:` allowances. Inline style attributes stay
+  // allowed for React and Motion.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          'font-src': ["'self'", 'data:'],
+          'style-src': ["'self'", "'unsafe-inline'"],
+        },
+      },
+      crossOriginEmbedderPolicy: true,
+    }),
+  );
+  app.use((_req, res, next) => {
+    res.set('permissions-policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+    next();
+  });
   app.use(express.json({ limit: BODY_LIMIT }));
   app.use(cookieParser());
 

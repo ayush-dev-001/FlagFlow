@@ -35,8 +35,25 @@ export function renderInvite(e: InviteEmail) {
   };
 }
 
+/** SMTP settings from a URL, with short timeouts so a blocked or wrong server fails in seconds, not minutes. */
+export function smtpOptions(smtpUrl: string) {
+  const url = new URL(smtpUrl);
+  const secure = url.protocol === 'smtps:';
+  return {
+    host: url.hostname,
+    port: url.port ? Number(url.port) : secure ? 465 : 587,
+    secure,
+    ...(url.username && {
+      auth: { user: decodeURIComponent(url.username), pass: decodeURIComponent(url.password) },
+    }),
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
+  };
+}
+
 export function createMailer(env: Pick<Env, 'SMTP_URL' | 'MAIL_FROM'>): Mailer {
-  const transport = nodemailer.createTransport(env.SMTP_URL);
+  const transport = nodemailer.createTransport(smtpOptions(env.SMTP_URL));
   return {
     async sendInvite(email) {
       await transport.sendMail({ from: env.MAIL_FROM, to: email.to, ...renderInvite(email) });

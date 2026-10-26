@@ -192,3 +192,41 @@ describe('invite email through Mailpit', { timeout: 30_000 }, () => {
     expect(res.body.organization.id).toBe(admin.orgId);
   });
 });
+
+describe('when the invite email cannot be sent', { timeout: 30_000 }, () => {
+  it('answers 502 at once and cancels the invite, so no dead link is left pending', async () => {
+    const failing = createApp(
+      testDeps(prisma, redis, {}, { sendInvite: () => Promise.reject(new Error('connect ETIMEDOUT')) }),
+    );
+    const admin = await register(failing);
+    const res = await request(failing)
+      .post('/api/team/invites')
+      .set(bearer(admin.accessToken))
+      .send({ email: 'someone@example.test' });
+    expect(res.status).toBe(502);
+    expect(res.body.error.code).toBe('EMAIL_NOT_SENT');
+    expect(JSON.stringify(res.body)).not.toContain('ETIMEDOUT');
+    const stored = await prisma.invite.findMany({ where: { orgId: admin.orgId } });
+    expect(stored.map((i) => i.status)).toEqual(['REVOKED']);
+  });
+
+  it('times out on an unreachable SMTP server in seconds, not minutes', async () => {
+    // 10.255.255.1 is a non-routable address: the connection just hangs, like a blocked port.
+    const mailer = createMailer({
+      SMTP_URL: 'smtps://u:p@10.255.255.1:2465',
+      MAIL_FROM: 'x <x@example.test>',
+    });
+    const started = Date.now();
+    await expect(
+      mailer.sendInvite({
+        to: 'a@example.test',
+        organizationName: 'Org',
+        inviterName: 'Ada',
+        role: 'MEMBER',
+        link: `${DASHBOARD_ORIGIN}/invite/t`,
+        expiresAt: new Date(Date.now() + INVITE_TTL_MS),
+      }),
+    ).rejects.toThrow();
+    expect(Date.now() - started).toBeLessThan(15_000);
+  });
+});
