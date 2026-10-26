@@ -2,7 +2,8 @@
 # the same origin, so the refresh cookie stays first-party (owner decision, 2026-10-26). demo-api calls
 # its public URL. demo-web is deployed on Vercel (apps/demo-web/vercel.json).
 #
-# Set in the dashboard after the first sync (sync: false): RESEND_API_KEY, SUPERADMIN_EMAIL, and on the demo
+# Set in the dashboard after the first sync (sync: false): BREVO_API_KEY (or RESEND_API_KEY), MAIL_FROM,
+# SUPERADMIN_EMAIL, and on the demo
 # backend FLAGFLOW_URL, FLAGFLOW_API_KEY and DEMO_WEB_ORIGIN. See DEPLOY.md.
 
 services:
@@ -49,11 +50,15 @@ services:
         value: '1'
       # Invite email through Resend's HTTPS API. Render's free plan blocks outbound SMTP ports, so use this
       # rather than SMTP_URL there. (SMTP_URL still works on hosts that allow SMTP.)
+      # Brevo delivers to anyone once MAIL_FROM is a sender verified in Brevo, with no domain needed. If both are
+      # set, Brevo is used. Resend without a verified domain only reaches its own account address.
+      - key: BREVO_API_KEY
+        sync: false
       - key: RESEND_API_KEY
         sync: false
-      # Without a verified domain, Resend only sends from onboarding@resend.dev to your own address.
+      # The verified sender, e.g. FlagFlow <you@gmail.com> (Brevo) or FlagFlow <onboarding@resend.dev> (Resend).
       - key: MAIL_FROM
-        value: FlagFlow <onboarding@resend.dev>
+        sync: false
       - key: SUPERADMIN_EMAIL
         sync: false
       - key: SUPERADMIN_PASSWORD

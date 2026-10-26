@@ -16,12 +16,22 @@ The steps below use Render's and Vercel's free plans:
 
 That is fine for a demo. Use paid plans for anything real.
 
-## 1. Email (Resend)
+## 1. Email (Brevo)
 
-1. Create a Resend account and an API key with sending access.
-2. Keep the key: FlagFlow sends invites through Resend's HTTPS API with it. Render's free plan blocks outbound SMTP (ports 25, 465 and 587, and 2465 was unreachable too), so SMTP isn't used there.
+Invites go out through an email provider's HTTPS API. Render's free plan blocks outbound SMTP (ports 25, 465 and 587, and 2465 was unreachable too), so SMTP isn't used there.
 
-Without a verified domain, Resend only delivers mail from `onboarding@resend.dev` to your own account address. That's enough to try invites on yourself. To invite anyone else, verify a domain in Resend, then change `MAIL_FROM` to an address on it.
+Brevo delivers to any recipient once you verify a single sender address, so you don't need a domain:
+
+1. Create a free Brevo account.
+2. Go to **Senders, domains & dedicated IPs → Senders → Add a sender**. Add the address invites should come from, e.g. your Gmail, then click the link Brevo emails to it.
+3. Go to **SMTP & API → API keys → Generate a new API key**. The key starts with `xkeysib-`.
+4. In Render, on `flagflow`, set:
+   - `BREVO_API_KEY` to that key.
+   - `MAIL_FROM` to `FlagFlow <the address you verified>`.
+
+Invites sent "from" a Gmail address through Brevo may land in spam, because Gmail's own records don't vouch for Brevo. A domain of your own fixes that later.
+
+Resend still works as well, via `RESEND_API_KEY`. Without a verified domain, though, it only delivers to its own account address. If both keys are set, Brevo is used.
 
 ## 2. Render (API, dashboard, demo backend, Postgres, Redis)
 
@@ -30,7 +40,8 @@ Without a verified domain, Resend only delivers mail from `onboarding@resend.dev
 
    | Service             | Key                | Value                                                              |
    | ------------------- | ------------------ | ------------------------------------------------------------------ |
-   | `flagflow`          | `RESEND_API_KEY`   | The Resend API key from step 1 (`re_…`)                            |
+   | `flagflow`          | `BREVO_API_KEY`    | The Brevo API key from step 1 (`xkeysib-…`)                        |
+   | `flagflow`          | `MAIL_FROM`        | `FlagFlow <the sender you verified in Brevo>`                      |
    | `flagflow`          | `SUPERADMIN_EMAIL` | Your email (the platform superadmin login)                         |
    | `flagflow-demo-api` | `FLAGFLOW_URL`     | The `flagflow` service's URL, e.g. `https://flagflow.onrender.com` |
    | `flagflow-demo-api` | `FLAGFLOW_API_KEY` | Leave empty for now (step 4)                                       |
