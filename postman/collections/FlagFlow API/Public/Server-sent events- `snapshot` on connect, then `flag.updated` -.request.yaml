@@ -1,0 +1,16 @@
+$kind: http-request
+name: "Server-sent events: `snapshot` on connect, then `flag.updated` / `flag.deleted` (id = version). Send Last-Event-ID to resume; `: ping` heartbeats every 25s."
+description: ""
+url: "{{baseUrl}}/v1/stream"
+method: GET
+headers:
+  Accept: application/json
+auth:
+  type: apikey
+  credentials:
+    key: x-api-key
+    value: "{{apiKey}}"
+    in: header
+settings: {}
+examples: ./.resources/Server-sent events- `snapshot` on connect, then `flag.updated` -.resources/examples
+order: 4000

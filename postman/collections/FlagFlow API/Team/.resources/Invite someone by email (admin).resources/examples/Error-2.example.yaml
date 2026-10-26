@@ -1,0 +1,34 @@
+$kind: http-example
+name: Error
+request:
+  url: "{{baseUrl}}/api/team/invites"
+  method: POST
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "email": "string",
+        "role": "MEMBER"
+      }
+response:
+  statusCode: 403
+  statusText: Forbidden
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "error": {
+          "code": "string",
+          "message": "string",
+          "details": ""
+        }
+      }
+order: 4000

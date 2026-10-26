@@ -1,0 +1,18 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/audit-logs?flagId=string&actorId=string&cursor=string&limit=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  flagId: string
+  actorId: string
+  cursor: string
+  limit: string
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+settings: {}
+examples: ./.resources/Audit log, newest first, cursor-paginated (admin).resources/examples
+order: 1000

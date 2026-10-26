@@ -18,6 +18,8 @@ const schema = z
     // Multiplies every rate limit. Only the local ZAP scan raises it, so the scanner isn't throttled into
     // testing nothing; the real limits are covered by the attack suite.
     RATE_LIMIT_SCALE: z.coerce.number().int().min(1).max(1000).default(1),
+    // Path to the built dashboard (apps/dashboard/dist). Set in production, where one service serves both.
+    DASHBOARD_DIST: z.string().min(1).optional(),
   })
   .refine((e) => e.NODE_ENV !== 'production' || e.RATE_LIMIT_SCALE === 1, {
     path: ['RATE_LIMIT_SCALE'],
@@ -28,7 +30,11 @@ export type Env = z.infer<typeof schema>;
 
 /** Parses and validates the environment. Errors name the bad keys but never echo their values. */
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const result = schema.safeParse(source);
+  // On Render the API serves the dashboard itself, so its own public URL is the dashboard origin.
+  const result = schema.safeParse({
+    ...source,
+    DASHBOARD_ORIGIN: source.DASHBOARD_ORIGIN ?? source.RENDER_EXTERNAL_URL,
+  });
   if (!result.success) {
     const problems = result.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment:\n${problems}`);

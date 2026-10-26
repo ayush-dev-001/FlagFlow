@@ -1,0 +1,44 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/team/members"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "members": [
+          {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "email": "Qy5ZV3WGK.U7VhixVqF.BGM3fsl9.VrFPgaN.cujG7mCr2@ZqGdHE.UXV5GFoIp.KH.WsWgp.jmBFoqBhyl",
+            "name": "string",
+            "role": "SUPERADMIN",
+            "isActive": false,
+            "lastLoginAt": "0194-10-05T01:01:45.5Z",
+            "createdAt": "9954-02-26T21:41:04.2Z"
+          },
+          {
+            "id": "DbBb4Af9-5bE9-191b-9EaE-9b3BEb6f97DA",
+            "email": "'tR.t27JRGe.2pt8.-Y-U.5bO9Y3.L72xv.0@Ok.VrW.pBDel6cAu7.1WFD.xOlGiaKre",
+            "name": "string",
+            "role": "MEMBER",
+            "isActive": false,
+            "lastLoginAt": "2800-02-29T23:42:20Z",
+            "createdAt": "5372-02-29T09:08:36.09Z"
+          }
+        ]
+      }
+order: 1000

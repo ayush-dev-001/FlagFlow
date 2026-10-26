@@ -1,0 +1,22 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/v1/flags/smoke_flag/evaluate?userId=U001'
+order: 6000
+auth:
+  type: noauth
+headers:
+  - key: x-api-key
+    value: '{{apiKey}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('U001 is listed, so it gets the flag', () => {
+        pm.response.to.have.status(200);
+        const body = pm.response.json();
+        pm.expect(body.enabled).to.eql(true);
+        pm.expect(body.version).to.be.a('number');
+      });
+      pm.test('per-org answers are never cached by shared caches', () => {
+        pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store');
+      });

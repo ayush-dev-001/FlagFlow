@@ -1,0 +1,9 @@
+$kind: collection
+name: FlagFlow Load
+description: >-
+  The hot path for customer backends - every flag for one end user - spread over 20 end users. Run it with
+  scripts/load-test.mjs, which registers an org, seeds six flags and passes its key in a temporary
+  environment that is never written into the repo.
+variables:
+  - key: baseUrl
+    value: 'http://localhost:4000'

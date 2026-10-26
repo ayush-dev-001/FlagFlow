@@ -1,0 +1,32 @@
+$kind: http-example
+name: Error
+request:
+  url: "{{baseUrl}}/api/auth/register"
+  method: POST
+  headers:
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "name": "string",
+        "email": "string",
+        "password": "stringstring",
+        "organizationName": "string"
+      }
+response:
+  statusCode: 429
+  statusText: Too Many Requests
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "error": {
+          "code": "string",
+          "message": "string",
+          "details": ""
+        }
+      }
+order: 4000

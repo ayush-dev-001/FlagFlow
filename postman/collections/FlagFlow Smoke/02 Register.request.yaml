@@ -1,0 +1,42 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/auth/register'
+order: 2000
+auth:
+  type: noauth
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Smoke Test",
+      "email": "{{smokeEmail}}",
+      "password": "smoke-test-password-1",
+      "organizationName": "Smoke {{smokeId}}"
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      const id = String(Date.now()) + String(Math.floor(Math.random() * 1e6));
+      pm.collectionVariables.set('smokeId', id);
+      pm.collectionVariables.set('smokeEmail', 'smoke-' + id + '@example.test');
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('creates the org, its admin and a one-time API key', () => {
+        pm.response.to.have.status(201);
+        const body = pm.response.json();
+        pm.expect(body.user.role).to.eql('ADMIN');
+        pm.expect(body.apiKey.key).to.match(/^ff_live_[A-Za-z0-9_-]{32}$/);
+        pm.expect(body.accessToken).to.be.a('string');
+        pm.collectionVariables.set('bearerToken', body.accessToken);
+        pm.collectionVariables.set('apiKey', body.apiKey.key);
+      });
+      pm.test('sets the refresh cookie httpOnly, never readable by scripts', () => {
+        const cookie = pm.response.headers.get('Set-Cookie') || '';
+        pm.expect(cookie).to.include('ff_refresh=');
+        pm.expect(cookie.toLowerCase()).to.include('httponly');
+      });

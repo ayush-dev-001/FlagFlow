@@ -1,0 +1,18 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/end-users/:endUserId/flags"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: endUserId
+    value: string
+    disabled: false
+    description: "(Required) "
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+settings: {}
+examples: ./.resources/Every flag and what one end user gets.resources/examples
+order: 9000

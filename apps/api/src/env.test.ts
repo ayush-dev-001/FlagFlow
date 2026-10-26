@@ -45,6 +45,14 @@ describe('loadEnv', () => {
     );
   });
 
+  it("falls back to Render's public URL for the dashboard origin, and an explicit one wins", () => {
+    const { DASHBOARD_ORIGIN: _omit, ...rest } = valid;
+    expect(() => loadEnv(rest)).toThrow(/DASHBOARD_ORIGIN/);
+    const render = 'https://flagflow.onrender.com';
+    expect(loadEnv({ ...rest, RENDER_EXTERNAL_URL: render }).DASHBOARD_ORIGIN).toBe(render);
+    expect(loadEnv({ ...valid, RENDER_EXTERNAL_URL: render }).DASHBOARD_ORIGIN).toBe(valid.DASHBOARD_ORIGIN);
+  });
+
   it('rejects an unknown NODE_ENV', () => {
     expect(() => loadEnv({ ...valid, NODE_ENV: 'staging' })).toThrow(/NODE_ENV/);
   });

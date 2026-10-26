@@ -439,8 +439,14 @@ export function buildOpenApi() {
 
   return {
     openapi: '3.1.0',
-    info: { title: 'FlagFlow API', version: '0.1.0' },
-    servers: [{ url: '/' }],
+    info: {
+      title: 'FlagFlow API',
+      version: '1.0.0',
+      description:
+        'Dashboard API under /api (JWT bearer, refresh cookie) and the public flag API under /v1 (x-api-key). Errors share one shape: { error: { code, message, details? } }.',
+    },
+    // Tools (Postman, ZAP) replace this origin; the deployed API serves the same paths.
+    servers: [{ url: 'http://localhost:4000', description: 'Local development' }],
     components: {
       securitySchemes: {
         bearer: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

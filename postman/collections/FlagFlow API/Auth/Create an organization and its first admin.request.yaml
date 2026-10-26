@@ -1,0 +1,19 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/auth/register"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "email": "string",
+      "password": "stringstring",
+      "organizationName": "string"
+    }
+settings: {}
+examples: ./.resources/Create an organization and its first admin.resources/examples
+order: 1000

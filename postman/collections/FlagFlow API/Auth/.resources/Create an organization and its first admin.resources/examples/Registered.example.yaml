@@ -1,0 +1,45 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/auth/register"
+  method: POST
+  headers:
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "name": "string",
+        "email": "string",
+        "password": "stringstring",
+        "organizationName": "string"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "accessToken": "string",
+        "expiresIn": 7575610335428607,
+        "user": {
+          "id": "bCedf22C-7a91-27C8-abdf-1aCFb0f8628f",
+          "email": "JsP.hK8os.wNt.qd'TKSqNIU.347.r7.VdbXU'P.n.Y.akov8@o.5jIpKP.S.agM35Hg.bec",
+          "name": "string",
+          "role": "ADMIN"
+        },
+        "organization": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "name": "string",
+          "slug": "string"
+        },
+        "apiKey": {
+          "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+          "name": "string",
+          "prefix": "string",
+          "key": "string"
+        }
+      }
+order: 1000

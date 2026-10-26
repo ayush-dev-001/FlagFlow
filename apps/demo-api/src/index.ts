@@ -6,7 +6,10 @@ import type { FlagChange, FlagSource, LinkState } from './flags.js';
 if (existsSync('.env')) process.loadEnvFile('.env');
 
 const port = Number(process.env.PORT ?? 4100);
-const baseUrl = process.env.FLAGFLOW_URL ?? 'http://localhost:4000';
+// FLAGFLOW_HOSTPORT is Render's private-network address of the API service (render.yaml).
+const baseUrl =
+  process.env.FLAGFLOW_URL ??
+  (process.env.FLAGFLOW_HOSTPORT ? `http://${process.env.FLAGFLOW_HOSTPORT}` : 'http://localhost:4000');
 const apiKey = process.env.FLAGFLOW_API_KEY ?? '';
 const webOrigin = process.env.DEMO_WEB_ORIGIN ?? 'http://localhost:5174';
 

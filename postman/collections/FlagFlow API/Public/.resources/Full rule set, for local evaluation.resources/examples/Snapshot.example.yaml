@@ -1,0 +1,45 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/v1/snapshot"
+  method: GET
+  headers:
+    - key: x-api-key
+      value: <API Key>
+      description: "Added as a part of security scheme: apikey"
+    - key: Accept
+      value: application/json
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "version": -7159646410244095,
+        "flags": [
+          {
+            "key": "string",
+            "enabled": false,
+            "targetAll": true,
+            "targets": [
+              "string",
+              "string"
+            ]
+          },
+          {
+            "key": "string",
+            "enabled": false,
+            "targetAll": false,
+            "targets": [
+              "string",
+              "string"
+            ]
+          }
+        ]
+      }
+order: 1000

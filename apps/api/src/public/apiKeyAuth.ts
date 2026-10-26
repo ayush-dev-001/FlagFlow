@@ -52,11 +52,14 @@ export function requireApiKey(prisma: PrismaClient, redis: Redis, logger: Logger
     }
     if (!ctx) throw invalidKey();
 
-    if (await redis.set(`ff:apikey-used:${ctx.keyId}`, '1', 'EX', 60, 'NX')) {
-      prisma.apiKey
-        .update({ where: { id: ctx.keyId }, data: { lastUsedAt: new Date() } })
-        .catch((err: unknown) => logger.warn({ err }, 'could not record API key use'));
-    }
+    // Bookkeeping, off the request path: one Redis round trip fewer on every evaluation.
+    const keyId = ctx.keyId;
+    void redis
+      .set(`ff:apikey-used:${keyId}`, '1', 'EX', 60, 'NX')
+      .then((fresh) =>
+        fresh ? prisma.apiKey.update({ where: { id: keyId }, data: { lastUsedAt: new Date() } }) : null,
+      )
+      .catch((err: unknown) => logger.warn({ err }, 'could not record API key use'));
 
     req.apiKey = ctx;
     next();

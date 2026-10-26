@@ -1,0 +1,6 @@
+workflows:
+  syncSpecToCollection:
+    - spec: ../postman/specs/flagflow-api.openapi.json
+      collection: ../postman/collections/FlagFlow API
+      options:
+        folderStrategy: Tags

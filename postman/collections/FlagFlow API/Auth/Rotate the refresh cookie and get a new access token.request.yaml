@@ -1,0 +1,20 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/auth/refresh"
+method: POST
+headers:
+  - key: X-Requested-With
+    value: string
+    disabled: false
+    description: "(Required) "
+  - key: Accept
+    value: application/json
+auth:
+  type: apikey
+  credentials:
+    key: ff_refresh
+    value: "{{apiKey}}"
+    in: header
+settings: {}
+examples: ./.resources/Rotate the refresh cookie and get a new access token.resources/examples
+order: 3000

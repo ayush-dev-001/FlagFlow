@@ -1,0 +1,36 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/team/invites"
+  method: POST
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "email": "string",
+        "role": "MEMBER"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "invite": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "email": "u14uJFK8w5z.bJ0QrSwDg0.srR57@B5d.XVHo",
+          "role": "MEMBER",
+          "status": "EXPIRED",
+          "expiresAt": "2800-02-29T20:35:21Z",
+          "createdAt": "4532-02-27T22:10:44Z"
+        }
+      }
+order: 1000

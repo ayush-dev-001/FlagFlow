@@ -1,0 +1,22 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/v1/flags/:key/evaluate?userId=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  userId: string
+pathVariables:
+  - key: key
+    value: string
+    disabled: false
+    description: "(Required) "
+auth:
+  type: apikey
+  credentials:
+    key: x-api-key
+    value: "{{apiKey}}"
+    in: header
+settings: {}
+examples: ./.resources/One flag for one end user (unknown flags are off).resources/examples
+order: 2000

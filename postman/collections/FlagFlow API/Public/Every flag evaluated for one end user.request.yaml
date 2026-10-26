@@ -1,0 +1,17 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/v1/flags/evaluate?userId=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  userId: string
+auth:
+  type: apikey
+  credentials:
+    key: x-api-key
+    value: "{{apiKey}}"
+    in: header
+settings: {}
+examples: ./.resources/Every flag evaluated for one end user.resources/examples
+order: 1000

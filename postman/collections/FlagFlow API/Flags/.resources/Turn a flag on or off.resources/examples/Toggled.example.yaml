@@ -1,0 +1,53 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/flags/:id/toggle"
+  method: POST
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  pathVariables:
+    - key: id
+      value: string
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "flag": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "key": "string",
+          "description": "string",
+          "enabled": false,
+          "targetAll": true,
+          "state": "inactive",
+          "version": 7695316778221567,
+          "targetCount": 944307997507583,
+          "createdBy": {
+            "id": "CfBEdaC1-1afe-28bb-A6CC-D9fc122FFFE7",
+            "name": "string"
+          },
+          "updatedBy": {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "name": "string"
+          },
+          "createdAt": "0359-10-25T20:50:04Z",
+          "updatedAt": "4918-12-31T20:52:30.9Z",
+          "targets": [
+            "string",
+            "string"
+          ]
+        }
+      }
+order: 1000

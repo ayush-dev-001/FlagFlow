@@ -1,0 +1,50 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/end-users/:endUserId/flags"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  pathVariables:
+    - key: endUserId
+      value: string
+      disabled: false
+      description: "(Required) "
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "endUserId": "string",
+        "flags": [
+          {
+            "id": "e5e69eCC-DC47-2bca-8cDF-9d7e4729Ae70",
+            "key": "string",
+            "description": "string",
+            "enabled": true,
+            "targeted": false,
+            "flagEnabled": false,
+            "targetAll": true
+          },
+          {
+            "id": "ccD15660-afaB-1Ec3-B9E0-BBD3a0d7d2F3",
+            "key": "string",
+            "description": "string",
+            "enabled": false,
+            "targeted": false,
+            "flagEnabled": true,
+            "targetAll": true
+          }
+        ]
+      }
+order: 1000

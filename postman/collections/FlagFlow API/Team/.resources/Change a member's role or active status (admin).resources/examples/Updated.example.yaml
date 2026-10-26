@@ -1,0 +1,42 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/team/members/:id"
+  method: PATCH
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  pathVariables:
+    - key: id
+      value: string
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "role": "ADMIN",
+        "isActive": false
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "member": {
+          "id": "F593FbfF-dDEA-87ED-AcCB-95C3D62DaeFf",
+          "email": "p4gJkEpz.NNF0.ShO-rpb.cX2JLK0o.o1NBV3Jk.c-X.g4uK+0ame@JY-N9k6QU5.VeSi.G.k.Fnly.jD1Ai.uoogN5wz-G.GF2NU.PS.PR9kzIc.PzOy",
+          "name": "string",
+          "role": "SUPERADMIN",
+          "isActive": true,
+          "lastLoginAt": "7940-02-29T23:20:06Z",
+          "createdAt": "5211-02-17T23:16:08.7990Z"
+        }
+      }
+order: 1000

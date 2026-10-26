@@ -1,0 +1,11 @@
+$kind: http-request
+method: DELETE
+url: '{{baseUrl}}/api/flags/{{flagId}}'
+order: 12000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('an admin deletes the flag', () => {
+        pm.response.to.have.status(204);
+      });

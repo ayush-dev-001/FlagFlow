@@ -1,0 +1,26 @@
+$kind: collection
+name: FlagFlow Smoke
+description: >-
+  A runnable end-to-end contract check. It registers an org, creates and toggles a flag, then reads it through
+  the public /v1 API with the org's key. Run it with npm run postman:smoke (local), or against a deployment
+  with -e and an environment file. Every run registers a fresh org, so it is safe to repeat.
+variables:
+  - key: baseUrl
+    value: 'http://localhost:4000'
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{bearerToken}}'
+scripts:
+  - type: 'http:afterResponse'
+    language: text/javascript
+    code: |-
+      // Every error, from any route, has the documented shape.
+      if (pm.response.code >= 400) {
+        pm.test(pm.info.requestName + ': error body is { error: { code, message } }', () => {
+          const body = pm.response.json();
+          pm.expect(body.error.code).to.be.a('string');
+          pm.expect(body.error.message).to.be.a('string');
+        });
+      }

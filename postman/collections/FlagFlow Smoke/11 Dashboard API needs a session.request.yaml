@@ -1,0 +1,13 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/flags'
+order: 11000
+auth:
+  type: noauth
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('no bearer token, no flags', () => {
+        pm.response.to.have.status(401);
+      });

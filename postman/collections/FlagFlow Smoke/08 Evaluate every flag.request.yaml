@@ -1,0 +1,17 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/v1/flags/evaluate?userId=U001'
+order: 8000
+auth:
+  type: noauth
+headers:
+  - key: x-api-key
+    value: '{{apiKey}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('every org flag, evaluated for the user', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().flags).to.eql({ smoke_flag: true });
+      });

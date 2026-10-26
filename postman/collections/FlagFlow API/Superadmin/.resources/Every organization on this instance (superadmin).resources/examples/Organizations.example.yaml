@@ -1,0 +1,46 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/admin/organizations"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "organizations": [
+          {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "name": "string",
+            "slug": "string",
+            "isActive": false,
+            "members": -7871454297194495,
+            "flags": -7797567526010879,
+            "activeApiKeys": 6535899273756671,
+            "createdAt": "4969-11-30T20:24:54Z"
+          },
+          {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "name": "string",
+            "slug": "string",
+            "isActive": false,
+            "members": -3449666771353600,
+            "flags": 4232254456856575,
+            "activeApiKeys": -8122377619636223,
+            "createdAt": "8059-10-20T21:10:21.44Z"
+          }
+        ]
+      }
+order: 1000

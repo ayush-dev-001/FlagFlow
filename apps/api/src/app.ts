@@ -21,13 +21,19 @@ import { publicRouter } from './public/routes.js';
 import { snapshotStore } from './public/snapshots.js';
 import { StreamHub, type StreamOptions } from './public/stream.js';
 import { createLimiters } from './rateLimit.js';
+import { dashboardStatic } from './static.js';
 import type { Redis } from './redis.js';
 import { teamRouter } from './team/routes.js';
 
 export interface AppDeps {
   env: Pick<
     Env,
-    'DASHBOARD_ORIGIN' | 'JWT_ACCESS_SECRET' | 'REFRESH_TOKEN_TTL_DAYS' | 'TRUST_PROXY' | 'RATE_LIMIT_SCALE'
+    | 'DASHBOARD_ORIGIN'
+    | 'JWT_ACCESS_SECRET'
+    | 'REFRESH_TOKEN_TTL_DAYS'
+    | 'TRUST_PROXY'
+    | 'RATE_LIMIT_SCALE'
+    | 'DASHBOARD_DIST'
   >;
   logger: Logger;
   prisma: PrismaClient;
@@ -100,6 +106,10 @@ export function createApp({ env, logger, prisma, redis, mailer, streamOptions }:
   app.use('/api/admin', adminRouter({ prisma, redis, limiters, jwtSecret, sessions: userSessions }));
 
   app.use('/v1', publicRouter({ prisma, redis, logger, limiters, snapshots, streams }));
+
+  // Production serves the built dashboard from this same origin, so its refresh cookie is first-party
+  // (owner decision, 2026-10-26). Unknown /api and /v1 paths still get the JSON 404 below.
+  if (env.DASHBOARD_DIST) app.use(dashboardStatic(env.DASHBOARD_DIST));
 
   app.use(notFound);
   app.use(errorHandler);
