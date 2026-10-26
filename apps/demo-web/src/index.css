@@ -1,17 +1,109 @@
-:root {
-  color-scheme: light;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    sans-serif;
-  background: #ffffff;
-  color: #111827;
+@import 'tailwindcss';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/inter-tight';
+@import '@fontsource-variable/geist-mono';
+
+/* Two worlds on one page. "Acme" is the demo customer's own app: warm paper and teal, light or dark
+   depending on the dark_mode flag. The side panel is FlagFlow's: ink and lime, as in the dashboard. */
+@theme inline {
+  --font-acme: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-ff: 'Inter Tight Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+
+  /* FlagFlow panel */
+  --color-ink: #0b0d0c;
+  --color-ink-card: #151817;
+  --color-lime: #c4f04a;
+  --color-ff-muted: #a2a5a3;
+  --color-ff-subtle: #868a88;
+
+  /* Acme, driven by the variables below so dark_mode can swap them */
+  --color-paper: var(--acme-paper);
+  --color-card: var(--acme-card);
+  --color-well: var(--acme-well);
+  --color-text: var(--acme-text);
+  --color-soft: var(--acme-soft);
+  --color-rule: var(--acme-rule);
+  --color-teal: var(--acme-teal);
+  --color-teal-ink: var(--acme-teal-ink);
+  --color-teal-soft: var(--acme-teal-soft);
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
+.acme {
+  --acme-paper: #f6f4ef;
+  --acme-card: #ffffff;
+  --acme-well: #efece5;
+  --acme-text: #1d1b18;
+  --acme-soft: #6b665d;
+  --acme-rule: #e4e0d7;
+  --acme-teal: #0f766e;
+  --acme-teal-ink: #ffffff;
+  --acme-teal-soft: #dcefeb;
+  color-scheme: light;
+  font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  background: var(--acme-paper);
+  color: var(--acme-text);
+  transition:
+    background-color 420ms ease,
+    color 420ms ease;
+}
+
+.acme.dark {
+  --acme-paper: #111315;
+  --acme-card: #1a1d20;
+  --acme-well: #23272b;
+  --acme-text: #f2f1ee;
+  --acme-soft: #a3a7ab;
+  --acme-rule: #2c3135;
+  --acme-teal: #2dd4bf;
+  --acme-teal-ink: #062b27;
+  --acme-teal-soft: #12332f;
+  color-scheme: dark;
+}
+
+.acme * {
+  transition-property: background-color, border-color, color;
+  transition-duration: 420ms;
+  transition-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acme,
+  .acme * {
+    transition: none !important;
+  }
+}
+
+@layer base {
+  html,
+  body {
+    margin: 0;
+    background: #0b0d0c;
+  }
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .ff :focus-visible {
+    outline-color: #c4f04a;
+  }
+  .acme :focus-visible {
+    outline-color: var(--acme-teal);
+  }
+}
+
+/* A changed flag row flashes lime once in the FlagFlow panel. */
+@keyframes ff-flash {
+  from {
+    background-color: rgb(196 240 74 / 0.22);
+  }
+}
+.ff-flash {
+  animation: ff-flash 1.4s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ff-flash {
+    animation: none;
+  }
 }

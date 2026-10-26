@@ -27,6 +27,7 @@
     "setup:env": "node scripts/setup-env.mjs",
     "db:migrate": "npm run db:migrate -w apps/api",
     "db:seed": "npm run db:seed -w apps/api",
+    "demo:key": "node scripts/demo-key.mjs",
     "e2e": "playwright test",
     "links": "linkinator http://localhost:4173 --recurse"
   },

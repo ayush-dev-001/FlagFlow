@@ -9,6 +9,12 @@ const E2E_DATABASE_URL = 'postgresql://flagflow:flagflow@localhost:5432/flagflow
 process.env.TEST_DATABASE_URL = E2E_DATABASE_URL;
 const DASHBOARD_PORT = 5180;
 export const DASHBOARD_URL = `http://localhost:${DASHBOARD_PORT}`;
+// The demo customer app (phase 8). demo-web runs here; the demo spec starts demo-api itself, because it
+// needs an API key that only exists once the test has registered an org.
+export const API_URL = `http://localhost:${API_PORT}`;
+export const DEMO_API_PORT = 4120;
+const DEMO_WEB_PORT = 5190;
+export const DEMO_WEB_URL = `http://localhost:${DEMO_WEB_PORT}`;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -55,6 +61,16 @@ export default defineConfig({
       reuseExistingServer: false,
       timeout: 60_000,
       env: { DASHBOARD_PORT: String(DASHBOARD_PORT), VITE_API_URL: `http://localhost:${API_PORT}/api` },
+    },
+    {
+      command: `npm run dev -w apps/demo-web -- --port ${DEMO_WEB_PORT}`,
+      url: DEMO_WEB_URL,
+      reuseExistingServer: false,
+      timeout: 60_000,
+      env: {
+        VITE_DEMO_API_URL: `http://localhost:${DEMO_API_PORT}`,
+        VITE_DASHBOARD_URL: DASHBOARD_URL,
+      },
     },
   ],
 });

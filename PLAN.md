@@ -113,6 +113,8 @@ Every page has loading, empty and error states, works at 375px width, and passes
 ## 4. Demo customer app
 
 - `demo-api` uses `packages/flag-client`: fetches `/v1/snapshot`, keeps the rules in memory, listens on `/v1/stream`, evaluates locally, and relays updates to its frontend over its own SSE endpoint. The API key stays in `demo-api/.env`.
+- Look (owner decision, 2026-10-26): the demo is the customer's own app, "Acme", with its own brand (warm paper and teal, Geist). Light or dark follows `dark_mode`. Beside it is a FlagFlow-styled panel in ink and lime: the demo user picker, the live connection, the six flags for that user, and a log of changes.
+- `npm run demo:key` creates the demo backend's API key for the seeded Acme org.
 - `demo-web`: pick a demo user (`U001`–`U005`), and six features react live:
 
 | Flag | ON | OFF |

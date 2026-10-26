@@ -10,6 +10,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@flagflow/flag-client": "0.0.0",
     "express": "^5.3.0"
   },
   "devDependencies": {

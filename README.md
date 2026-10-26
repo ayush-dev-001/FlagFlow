@@ -21,6 +21,25 @@ npm run db:seed        # superadmin, the "acme" demo org with its admin, and six
 npm run dev            # api :4000, dashboard :5173, demo-api :4100, demo-web :5174
 ```
 
+## The live demo
+
+The demo customer app shows a flag change landing in a running app with no refresh and no redeploy.
+
+1. With the API running, give the demo backend a key for the seeded Acme org. `npm run demo:key` creates it and saves it to `apps/demo-api/.env`. Then restart `npm run dev`.
+2. Open the demo at http://localhost:5174 and the dashboard at http://localhost:5173, side by side. Log in to the dashboard as the demo admin; the credentials are in `apps/api/.env`.
+3. Pick a user in the demo panel (U001–U005) and change any of the six flags in the dashboard. The Acme app changes within a second for the users the flag reaches, and the panel logs each change.
+
+| Flag                  | On                   | Off                 |
+| --------------------- | -------------------- | ------------------- |
+| `dark_mode`           | Dark theme           | Light theme         |
+| `chat_widget`         | Support chat bubble  | Hidden              |
+| `analytics_dashboard` | Sales analytics      | Locked              |
+| `new_checkout`        | One-step checkout    | Classic three steps |
+| `beta_banner`         | Beta banner          | None                |
+| `export_report`       | Export PDF on Orders | Hidden              |
+
+`demo-api` holds the API key and evaluates flags locally with `flag-client`, so the browser never sees the key. It also enforces the same flags on its own routes.
+
 ## Scripts
 
 | Script               | What it does                                                                |
@@ -32,6 +51,8 @@ npm run dev            # api :4000, dashboard :5173, demo-api :4100, demo-web :5
 | `npm run setup:env`  | Creates missing `.env` files and adds missing keys; never overwrites values |
 | `npm run db:migrate` | Creates and applies Prisma migrations (dev database)                        |
 | `npm run db:seed`    | Seeds the dev database; only creates what is missing                        |
+| `npm run demo:key`   | Creates an API key for the demo org and saves it to `apps/demo-api/.env`    |
+| `npm run e2e`        | Playwright journeys at 1440px and 375px, including the live demo            |
 | `npm run format`     | Formats the repo with Prettier                                              |
 
 CI runs `npm run verify` on every push to `main` and on pull requests.

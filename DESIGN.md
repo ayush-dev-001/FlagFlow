@@ -533,6 +533,17 @@ Two white/5 vertical rails at 17% from each edge, two concentric faint arcs (whi
 
 One ease: cubic-bezier(0.16, 1, 0.3, 1). Durations are 160ms, 240ms and 420ms. Page content rises 6px. Hero and auth blocks rise 14px over 700ms, staggered by 80ms. A spring (stiffness 520, damping 38) is used only for things that settle, such as a toggle knob. Reduced motion keeps opacity and drops transforms. In the app, the switch knob springs; the segment pill slides and a flag card moves between columns over 240ms; ID chips pop over 160ms; dialogs rise 8px and toasts 10px over 240ms; and the connected dot pings while streams are open. The auth illustration: field lines fill over 250ms, the screen tint over 350ms, the error shake runs 450ms, the avatar bobs on a 3s loop and the drawing keeps its own SVG loops; under reduced motion the shake, bob and caret blink stop and the SVG loops are paused.
 
+## The Demo App
+
+`apps/demo-web` is outside this system on purpose (owner decision, 2026-10-26). It plays a FlagFlow customer, "Acme", so it has its own brand:
+
+- Geist type.
+- Warm paper #f6f4ef with white cards and deep teal #0f766e.
+- In dark, #111315 with bright teal #2dd4bf.
+- Radii of 10–16px.
+
+Only its side panel is FlagFlow: ink, lime for on, Inter Tight, and Geist Mono for keys and IDs, matching the dashboard. Lime never appears in Acme, and Acme's teal never appears in FlagFlow. The panel's one signature is "the change lands": a changed flag row flashes lime once and the log gains a line. The flash is skipped under reduced motion. Its brief is `apps/demo-web/.impeccable/surfaces/apps-demo-web.md`.
+
 ## Do's and Don'ts
 
 ### Do:
