@@ -62,7 +62,9 @@ function userOf(req: Request, res: Response): string | null {
   return raw;
 }
 
-export function createDemoApp({ flags, webOrigin, heartbeatMs = 25_000 }: DemoAppOptions) {
+export function createDemoApp({ flags, webOrigin: configured, heartbeatMs = 25_000 }: DemoAppOptions) {
+  // Browsers send the origin without a trailing slash; a URL pasted with one would otherwise never match.
+  const webOrigin = configured.trim().replace(/\/+$/, '');
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '16kb' }));
