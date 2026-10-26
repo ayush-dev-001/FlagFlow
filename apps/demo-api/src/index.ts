@@ -20,6 +20,7 @@ function flagClientSource(): FlagSource & { start(): Promise<void> } {
     for (const l of listeners) l(change);
   };
   let state: LinkState = apiKey ? 'connecting' : 'unconfigured';
+  let lastError: { message: string; at: string } | null = null;
 
   const client = createFlagClient({
     baseUrl,
@@ -34,8 +35,13 @@ function flagClientSource(): FlagSource & { start(): Promise<void> } {
         },
       );
     },
+    onConnect: () => {
+      state = 'live';
+      emit();
+    },
     onError: (err) => {
       state = err instanceof FlagClientAuthError ? 'rejected' : 'reconnecting';
+      lastError = { message: err.message, at: new Date().toISOString() };
       console.warn(`FlagFlow: ${err.message}`);
       emit();
     },
@@ -43,6 +49,7 @@ function flagClientSource(): FlagSource & { start(): Promise<void> } {
 
   return {
     state: () => state,
+    lastError: () => lastError,
     version: () => client.version,
     evaluate: (userId) => client.getAll(userId),
     subscribe(listener) {

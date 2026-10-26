@@ -91,7 +91,12 @@ export function createDemoApp({ flags, webOrigin: configured, heartbeatMs = 25_0
   });
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', flagflow: flags.state(), version: flags.version() });
+    res.json({
+      status: 'ok',
+      flagflow: flags.state(),
+      version: flags.version(),
+      lastError: flags.lastError?.() ?? null,
+    });
   });
 
   app.get('/api/users', (_req, res) => {

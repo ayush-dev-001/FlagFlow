@@ -10,6 +10,11 @@ export interface FlagClientOptions {
   onChange?: (snapshot: Snapshot, event?: FlagEvent) => void;
   /** Called on connection problems; the client keeps retrying unless the key is rejected. */
   onError?: (error: Error) => void;
+  /**
+   * Called each time the live stream opens. A reconnect that is already current gets no new snapshot,
+   * so this, not onChange, is the signal that the client is live again.
+   */
+  onConnect?: () => void;
   /** Reconnect backoff bounds, in milliseconds. */
   minRetryMs?: number;
   maxRetryMs?: number;
@@ -96,6 +101,7 @@ export class FlagClient {
           ...(this.snapshot && { 'last-event-id': String(this.snapshot.version) }),
         });
         attempt = 0;
+        this.options.onConnect?.();
         for await (const msg of parseSse(res.body!)) {
           if (msg.event === 'snapshot') {
             this.setSnapshot(JSON.parse(msg.data) as Snapshot);

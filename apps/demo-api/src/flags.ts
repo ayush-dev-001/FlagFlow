@@ -24,6 +24,8 @@ export interface FlagChange {
 
 export interface FlagSource {
   state(): LinkState;
+  /** The last connection problem, for /health. Messages never include the API key. */
+  lastError?(): { message: string; at: string } | null;
   version(): number | null;
   /** Every flag FlagFlow knows for this user; unknown flags are off. */
   evaluate(userId: string): Record<string, boolean>;

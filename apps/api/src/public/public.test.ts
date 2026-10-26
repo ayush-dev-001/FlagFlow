@@ -309,6 +309,34 @@ describe('flag-client', { timeout: 30_000 }, () => {
     client.close();
   });
 
+  it('reports each stream connection, including a reconnect that needs no new snapshot', async () => {
+    const { apiKey } = await orgWithFlag();
+    let connects = 0;
+    const versions: number[] = [];
+    const client = createFlagClient({
+      baseUrl: server.baseUrl,
+      apiKey,
+      onConnect: () => (connects += 1),
+      onChange: (s) => versions.push(s.version),
+      minRetryMs: 50,
+    });
+    await client.start();
+    const waitFor = async (cond: () => boolean) => {
+      const deadline = Date.now() + 3000;
+      while (!cond() && Date.now() < deadline) await new Promise((r) => setTimeout(r, 20));
+      return cond();
+    };
+    expect(await waitFor(() => connects === 1)).toBe(true);
+    const changesBefore = versions.length;
+
+    // Drop every open stream: the client reconnects with a current Last-Event-ID, so no snapshot comes,
+    // but onConnect still says it is live again.
+    await closeApp(app);
+    expect(await waitFor(() => connects >= 2)).toBe(true);
+    expect(versions.length).toBe(changesBefore);
+    client.close();
+  });
+
   it('stops with an auth error when its key is revoked', async () => {
     const { apiKey, admin } = await orgWithFlag();
     const errors: Error[] = [];
