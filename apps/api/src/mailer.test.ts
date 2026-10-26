@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createMailer, type InviteEmail, MailRefusedError, parseSender, smtpOptions } from './mailer.js';
+import { createMailer, type InviteEmail, MailRefusedError, smtpOptions } from './mailer.js';
 
 describe('smtpOptions', () => {
   it('reads host, port, TLS and credentials from the URL, with short timeouts', () => {
@@ -85,56 +85,7 @@ describe('Resend HTTPS mailer', () => {
     expect((err as MailRefusedError).reason).toBe('other');
   });
 
-  it('needs one of SMTP_URL, RESEND_API_KEY or BREVO_API_KEY', () => {
-    expect(() => createMailer({ MAIL_FROM: env.MAIL_FROM })).toThrow(
-      /SMTP_URL, RESEND_API_KEY or BREVO_API_KEY/,
-    );
-  });
-});
-
-describe('parseSender', () => {
-  it('splits a display name from the address, or takes a bare address', () => {
-    expect(parseSender('FlagFlow <me@gmail.com>')).toEqual({ name: 'FlagFlow', email: 'me@gmail.com' });
-    expect(parseSender('"Flag Flow" <me@gmail.com>')).toEqual({ name: 'Flag Flow', email: 'me@gmail.com' });
-    expect(parseSender(' me@gmail.com ')).toEqual({ name: undefined, email: 'me@gmail.com' });
-  });
-});
-
-describe('Brevo HTTPS mailer', () => {
-  // Built at runtime so secret scanners don't mistake a test value for a real key.
-  const BREVO = `xkeysib-${'x'.repeat(24)}`;
-  const env = { MAIL_FROM: 'FlagFlow <owner@gmail.com>', BREVO_API_KEY: BREVO };
-
-  it('posts the invite to Brevo with the verified sender and a one-line subject', async () => {
-    const f = fakeFetch(201, { messageId: '<1@smtp-relay.mailin.fr>' });
-    await createMailer(env, f.impl).sendInvite(invite);
-    expect(f.calls[0]!.url).toBe('https://api.brevo.com/v3/smtp/email');
-    expect((f.calls[0]!.init.headers as Record<string, string>)['api-key']).toBe(BREVO);
-    const sent = JSON.parse(f.calls[0]!.init.body as string) as Record<string, unknown>;
-    expect(sent).toMatchObject({
-      sender: { name: 'FlagFlow', email: 'owner@gmail.com' },
-      to: [{ email: 'mia@example.test' }],
-    });
-    expect(sent.subject).not.toMatch(/[\r\n]/);
-    expect(sent.textContent).toContain(invite.link);
-  });
-
-  it('is preferred over Resend and SMTP when set', async () => {
-    const f = fakeFetch(201, {});
-    await createMailer({ ...env, RESEND_API_KEY: KEY, SMTP_URL: 'smtp://localhost:1' }, f.impl).sendInvite(
-      invite,
-    );
-    expect(f.calls[0]!.url).toContain('api.brevo.com');
-  });
-
-  it('throws on a refusal with Brevo’s reason, never the key', async () => {
-    const f = fakeFetch(400, { code: 'invalid_parameter', message: 'Sender is not valid' });
-    const err = await createMailer(env, f.impl)
-      .sendInvite(invite)
-      .then(() => null)
-      .catch((e: unknown) => e);
-    expect(err).toBeInstanceOf(MailRefusedError);
-    expect((err as Error).message).toContain('Sender is not valid');
-    expect((err as Error).message).not.toContain(BREVO);
+  it('needs SMTP_URL or RESEND_API_KEY', () => {
+    expect(() => createMailer({ MAIL_FROM: env.MAIL_FROM })).toThrow(/SMTP_URL or RESEND_API_KEY/);
   });
 });

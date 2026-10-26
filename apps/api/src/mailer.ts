@@ -91,56 +91,12 @@ function resendMailer(apiKey: string, from: string, fetchImpl: typeof fetch): Ma
   };
 }
 
-const BREVO_API = 'https://api.brevo.com/v3/smtp/email';
-
-/** "FlagFlow <me@gmail.com>" → { name, email }; a bare address is used as is. */
-export function parseSender(from: string) {
-  const match = /^\s*(.*?)\s*<\s*([^<>\s]+@[^<>\s]+)\s*>\s*$/.exec(from);
-  if (match) return { name: match[1]!.replace(/^"|"$/g, '') || undefined, email: match[2]! };
-  return { name: undefined, email: from.trim() };
-}
-
-/**
- * Sends through Brevo's HTTPS API (port 443). Brevo delivers to any recipient once the sender address
- * (MAIL_FROM) is verified in the Brevo account, so no domain is needed. The key never appears in errors.
- */
-function brevoMailer(apiKey: string, from: string, fetchImpl: typeof fetch): Mailer {
-  const sender = parseSender(from);
-  return {
-    async sendInvite(email) {
-      const { subject, text, html } = renderInvite(email);
-      const res = await fetchImpl(BREVO_API, {
-        method: 'POST',
-        headers: { 'api-key': apiKey, 'content-type': 'application/json', accept: 'application/json' },
-        body: JSON.stringify({
-          sender,
-          to: [{ email: email.to }],
-          subject: subject.replace(/[\r\n]+/g, ' '),
-          textContent: text,
-          htmlContent: html,
-        }),
-        signal: AbortSignal.timeout(10_000),
-      });
-      if (!res.ok) {
-        const body = (await res.json().catch(() => null)) as { code?: string; message?: string } | null;
-        const detail = [body?.code, body?.message].filter(Boolean).join(': ');
-        throw new MailRefusedError(
-          `Brevo refused the email (${res.status})${detail ? `: ${detail}` : ''}`,
-          'other',
-        );
-      }
-    },
-  };
-}
-
-/** Picks the provider: Brevo, then Resend, then SMTP, whichever is configured first. */
 export function createMailer(
-  env: Pick<Env, 'SMTP_URL' | 'MAIL_FROM' | 'RESEND_API_KEY' | 'BREVO_API_KEY'>,
+  env: Pick<Env, 'SMTP_URL' | 'MAIL_FROM' | 'RESEND_API_KEY'>,
   fetchImpl: typeof fetch = fetch,
 ): Mailer {
-  if (env.BREVO_API_KEY) return brevoMailer(env.BREVO_API_KEY, env.MAIL_FROM, fetchImpl);
   if (env.RESEND_API_KEY) return resendMailer(env.RESEND_API_KEY, env.MAIL_FROM, fetchImpl);
-  if (!env.SMTP_URL) throw new Error('Set SMTP_URL, RESEND_API_KEY or BREVO_API_KEY to send invite email');
+  if (!env.SMTP_URL) throw new Error('Set SMTP_URL or RESEND_API_KEY to send invite email');
   const transport = nodemailer.createTransport(smtpOptions(env.SMTP_URL));
   return {
     async sendInvite(email) {
