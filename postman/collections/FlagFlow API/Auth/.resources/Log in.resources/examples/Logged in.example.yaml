@@ -1,0 +1,37 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/auth/login"
+  method: POST
+  headers:
+    Accept: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "email": "string",
+        "password": "string"
+      }
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "accessToken": "string",
+        "expiresIn": 6447836174483455,
+        "user": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "email": "Rf5V5fR.1HVQsLU.v3.MGKx.wC.B.lSuLxRxD.Fhir4cdgNBF@j.MuKHk.p09MtkCNG.hQmIqzpq29o.wqDMXQL.lo.plZUa.oGABpE6.gnVvA",
+          "name": "string",
+          "role": "MEMBER"
+        },
+        "organization": {
+          "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+          "name": "string",
+          "slug": "string"
+        }
+      }
+order: 1000

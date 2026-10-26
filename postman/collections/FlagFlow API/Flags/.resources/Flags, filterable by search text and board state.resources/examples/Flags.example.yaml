@@ -1,0 +1,69 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/flags?search=string&state=string"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  queryParams:
+    search: string
+    state: string
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "flags": [
+          {
+            "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            "key": "string",
+            "description": "string",
+            "enabled": true,
+            "targetAll": false,
+            "state": "inactive",
+            "version": 2314407145111551,
+            "targetCount": 3736125600432127,
+            "createdBy": {
+              "id": "00000000-0000-0000-0000-000000000000",
+              "name": "string"
+            },
+            "updatedBy": {
+              "id": "00000000-0000-0000-0000-000000000000",
+              "name": "string"
+            },
+            "createdAt": "1049-01-03T22:55:55Z",
+            "updatedAt": "8776-02-29T23:10:27Z"
+          },
+          {
+            "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+            "key": "string",
+            "description": "string",
+            "enabled": true,
+            "targetAll": false,
+            "state": "testing",
+            "version": 8984702241210367,
+            "targetCount": -5904732669345792,
+            "createdBy": {
+              "id": "a6638565-B5C3-49D4-9Ce7-4C726f5D469B",
+              "name": "string"
+            },
+            "updatedBy": {
+              "id": "9A628C41-EEa2-41f7-A5dA-2DB59CeC1EA1",
+              "name": "string"
+            },
+            "createdAt": "4828-02-29T22:17:43Z",
+            "updatedAt": "5928-01-24T18:08:52Z"
+          }
+        ]
+      }
+order: 1000

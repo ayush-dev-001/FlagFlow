@@ -143,6 +143,8 @@ Each phase ends with the **phase gate** (section 6) passing, then one commit pus
 | 8 | Demo app | demo-api + demo-web with six live features | toggling `dark_mode` in the dashboard flips U001's demo app live, no refresh, no redeploy |
 | 9 | Hardening & deploy | OpenAPI docs, Postman collection, load test on `/v1/flags/evaluate`, production config, deploy (Vercel + Render + managed Postgres/Redis) | full demo works on deployed URLs; gate passes against production build |
 
+Phase 9 as built (owner decisions, 2026-10-26): one Render service runs the API and serves the dashboard from the same origin, so the refresh cookie is first-party. demo-api is on Render, demo-web on Vercel, with Render Postgres and Key Value. Invites go through Resend's HTTPS API, because Render's free plan blocks SMTP. See DEPLOY.md and security/reports/phase-9.md.
+
 ## 6. Phase gate (run at the end of every phase)
 
 1. **Code quality:** `npm run verify` = typecheck + lint + unit/integration tests + build, all workspaces.

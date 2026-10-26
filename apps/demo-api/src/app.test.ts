@@ -91,6 +91,11 @@ describe('demo-api', () => {
     const ok = await request(app).get('/api/users').set('origin', ORIGIN);
     expect(ok.headers['access-control-allow-origin']).toBe(ORIGIN);
     const other = await request(app).get('/api/users').set('origin', 'https://evil.example');
+    // A configured origin pasted with a trailing slash still matches what browsers send.
+    const slashed = createDemoApp({ flags: fakeSource().source, webOrigin: `${ORIGIN}/` });
+    expect(
+      (await request(slashed).get('/api/users').set('origin', ORIGIN)).headers['access-control-allow-origin'],
+    ).toBe(ORIGIN);
     expect(other.headers['access-control-allow-origin']).toBeUndefined();
   });
 

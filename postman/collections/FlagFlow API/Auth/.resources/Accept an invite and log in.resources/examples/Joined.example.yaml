@@ -1,0 +1,42 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/auth/invites/:token/accept"
+  method: POST
+  headers:
+    Accept: application/json
+  pathVariables:
+    - key: token
+      value: string
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "name": "string",
+        "password": "stringstring"
+      }
+response:
+  statusCode: 201
+  statusText: Created
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "accessToken": "string",
+        "expiresIn": 6447836174483455,
+        "user": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "email": "Rf5V5fR.1HVQsLU.v3.MGKx.wC.B.lSuLxRxD.Fhir4cdgNBF@j.MuKHk.p09MtkCNG.hQmIqzpq29o.wqDMXQL.lo.plZUa.oGABpE6.gnVvA",
+          "name": "string",
+          "role": "MEMBER"
+        },
+        "organization": {
+          "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+          "name": "string",
+          "slug": "string"
+        }
+      }
+order: 1000

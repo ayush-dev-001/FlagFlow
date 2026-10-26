@@ -40,6 +40,20 @@ The demo customer app shows a flag change landing in a running app with no refre
 
 `demo-api` holds the API key and evaluates flags locally with `flag-client`, so the browser never sees the key. It also enforces the same flags on its own routes.
 
+## Deployment
+
+The live demo runs on Render (API, dashboard and demo backend) and Vercel (demo app). [DEPLOY.md](DEPLOY.md) has the steps.
+
+## API contract and tests
+
+The OpenAPI spec lives at `postman/specs/flagflow-api.openapi.json`. The API also serves it at `/api/docs`; refresh the file with `npm run openapi`. A test fails if the file drifts from the code.
+
+The `postman/collections/` folder holds three collections:
+
+- **FlagFlow API:** a reference collection generated from the spec.
+- **FlagFlow Smoke:** a scripted end-to-end contract check (`npm run postman:smoke`).
+- **FlagFlow Load:** a load test for `/v1/flags/evaluate`, run with `node scripts/load-test.mjs`.
+
 ## Scripts
 
 | Script               | What it does                                                                |

@@ -1,0 +1,5 @@
+localResources:
+  specs:
+    - ../postman/specs/flagflow-api.openapi.json
+workspace:
+  id: ''

@@ -1,0 +1,17 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/v1/flags/no_such_flag/evaluate?userId=U001'
+order: 9000
+auth:
+  type: noauth
+headers:
+  - key: x-api-key
+    value: '{{apiKey}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('an unknown flag is off, not an error', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().enabled).to.eql(false);
+      });

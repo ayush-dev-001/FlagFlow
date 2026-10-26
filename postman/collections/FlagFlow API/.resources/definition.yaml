@@ -1,0 +1,6 @@
+$kind: collection
+description: "Dashboard API under /api (JWT bearer, refresh cookie) and the public flag API under /v1 (x-api-key). Errors share one shape: { error: { code, message, details? } }."
+variables:
+  baseUrl: http://localhost:4000
+  apiKey: ""
+  bearerToken: ""

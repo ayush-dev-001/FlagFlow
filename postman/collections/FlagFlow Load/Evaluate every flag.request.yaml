@@ -1,0 +1,20 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/v1/flags/evaluate?userId={{userId}}'
+order: 1000
+headers:
+  - key: x-api-key
+    value: '{{apiKey}}'
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      // Twenty different end users, so evaluation isn't one cached answer.
+      pm.variables.set('userId', 'U' + String(1 + Math.floor(Math.random() * 20)).padStart(3, '0'));
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('200 with all six flags', () => {
+        pm.response.to.have.status(200);
+        pm.expect(Object.keys(pm.response.json().flags)).to.have.lengthOf(6);
+      });

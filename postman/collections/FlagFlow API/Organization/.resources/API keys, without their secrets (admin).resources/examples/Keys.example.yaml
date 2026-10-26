@@ -1,0 +1,42 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/org/api-keys"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "apiKeys": [
+          {
+            "id": "83AD7DFA-79B5-8Ba4-b471-DE849aD07Bee",
+            "name": "string",
+            "prefix": "string",
+            "lastUsedAt": "8156-02-29T21:02:51.27702804Z",
+            "revokedAt": "9600-02-29T21:40:21Z",
+            "createdAt": "9587-02-08T14:47:21Z"
+          },
+          {
+            "id": "00000000-0000-0000-0000-000000000000",
+            "name": "string",
+            "prefix": "string",
+            "lastUsedAt": "2068-04-24T06:40:24.33620Z",
+            "revokedAt": "8400-02-29T15:08:11Z",
+            "createdAt": "9200-02-29T15:16:27.1Z"
+          }
+        ]
+      }
+order: 1000

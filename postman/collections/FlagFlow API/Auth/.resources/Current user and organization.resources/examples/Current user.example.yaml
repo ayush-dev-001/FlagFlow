@@ -1,0 +1,35 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/auth/me"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "user": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "email": "C5f.7.B_@FlN82.zD.WNJZ.cT.pg.62L.gk",
+          "name": "string",
+          "role": "ADMIN"
+        },
+        "organization": {
+          "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+          "name": "string",
+          "slug": "string"
+        }
+      }
+order: 1000

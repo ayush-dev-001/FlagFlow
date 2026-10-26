@@ -1,0 +1,22 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/auth/invites/:token/accept"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: token
+    value: string
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "name": "string",
+      "password": "stringstring"
+    }
+settings: {}
+examples: ./.resources/Accept an invite and log in.resources/examples
+order: 7000

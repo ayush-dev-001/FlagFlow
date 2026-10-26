@@ -1,0 +1,58 @@
+$kind: http-example
+request:
+  url: "{{baseUrl}}/api/audit-logs?flagId=string&actorId=string&cursor=string&limit=string"
+  method: GET
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  queryParams:
+    flagId: string
+    actorId: string
+    cursor: string
+    limit: string
+  body:
+    type: text
+    content: ""
+response:
+  statusCode: 200
+  statusText: OK
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "entries": [
+          {
+            "id": "string",
+            "action": "string",
+            "flagId": "B6A5ee70-F51C-7abB-99c4-BCCAc5BA71eD",
+            "actor": {
+              "id": "ffffffff-ffff-ffff-ffff-ffffffffffff",
+              "name": "string",
+              "email": "string"
+            },
+            "metadata": "",
+            "ip": "string",
+            "createdAt": "8504-02-29T14:37:39.66057Z"
+          },
+          {
+            "id": "string",
+            "action": "string",
+            "flagId": "00000000-0000-0000-0000-000000000000",
+            "actor": {
+              "id": "00000000-0000-0000-0000-000000000000",
+              "name": "string",
+              "email": "string"
+            },
+            "metadata": "",
+            "ip": "string",
+            "createdAt": "8212-02-21T17:59:27Z"
+          }
+        ],
+        "nextCursor": "string"
+      }
+order: 1000

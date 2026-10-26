@@ -14,3 +14,9 @@ docs
 # Design-process notes written by the Impeccable CLI
 .impeccable
 **/.impeccable
+
+# Written by the Postman CLI (init, spec generate); its own format, linted with `postman collection lint`
+postman/collections
+postman/environments
+postman/skills
+.postman

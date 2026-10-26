@@ -1,0 +1,45 @@
+$kind: http-example
+name: Error
+request:
+  url: "{{baseUrl}}/api/flags/:id/targets"
+  method: POST
+  headers:
+    - key: Authorization
+      value: Bearer <token>
+      description: "Added as a part of security scheme: bearer"
+    - key: Accept
+      value: application/json
+  pathVariables:
+    - key: id
+      value: string
+      disabled: false
+      description: "(Required) "
+  body:
+    type: json
+    content: |-
+      {
+        "add": [
+          "bxoTXfz",
+          "F9DCANb-Hf6"
+        ],
+        "remove": [
+          "CDmkcC7Zv",
+          "@Nmd"
+        ]
+      }
+response:
+  statusCode: 404
+  statusText: Not Found
+  headers:
+    Content-Type: application/json
+  body:
+    type: json
+    content: |-
+      {
+        "error": {
+          "code": "string",
+          "message": "string",
+          "details": ""
+        }
+      }
+order: 5000

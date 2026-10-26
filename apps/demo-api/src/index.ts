@@ -6,7 +6,10 @@ import type { FlagChange, FlagSource, LinkState } from './flags.js';
 if (existsSync('.env')) process.loadEnvFile('.env');
 
 const port = Number(process.env.PORT ?? 4100);
-const baseUrl = process.env.FLAGFLOW_URL ?? 'http://localhost:4000';
+// FLAGFLOW_HOSTPORT is Render's private-network address of the API service (render.yaml).
+const baseUrl =
+  process.env.FLAGFLOW_URL ??
+  (process.env.FLAGFLOW_HOSTPORT ? `http://${process.env.FLAGFLOW_HOSTPORT}` : 'http://localhost:4000');
 const apiKey = process.env.FLAGFLOW_API_KEY ?? '';
 const webOrigin = process.env.DEMO_WEB_ORIGIN ?? 'http://localhost:5174';
 
@@ -17,6 +20,7 @@ function flagClientSource(): FlagSource & { start(): Promise<void> } {
     for (const l of listeners) l(change);
   };
   let state: LinkState = apiKey ? 'connecting' : 'unconfigured';
+  let lastError: { message: string; at: string } | null = null;
 
   const client = createFlagClient({
     baseUrl,
@@ -31,8 +35,13 @@ function flagClientSource(): FlagSource & { start(): Promise<void> } {
         },
       );
     },
+    onConnect: () => {
+      state = 'live';
+      emit();
+    },
     onError: (err) => {
       state = err instanceof FlagClientAuthError ? 'rejected' : 'reconnecting';
+      lastError = { message: err.message, at: new Date().toISOString() };
       console.warn(`FlagFlow: ${err.message}`);
       emit();
     },
@@ -40,6 +49,7 @@ function flagClientSource(): FlagSource & { start(): Promise<void> } {
 
   return {
     state: () => state,
+    lastError: () => lastError,
     version: () => client.version,
     evaluate: (userId) => client.getAll(userId),
     subscribe(listener) {

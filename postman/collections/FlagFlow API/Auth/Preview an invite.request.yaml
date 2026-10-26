@@ -1,0 +1,14 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/auth/invites/:token"
+method: GET
+headers:
+  Accept: application/json
+pathVariables:
+  - key: token
+    value: string
+    disabled: false
+    description: "(Required) "
+settings: {}
+examples: ./.resources/Preview an invite.resources/examples
+order: 6000

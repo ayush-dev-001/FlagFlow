@@ -1,0 +1,26 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/flags"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: json
+  content: |-
+    {
+      "key": "99_0cdx0nopkdghq0d",
+      "description": "",
+      "targetAll": false,
+      "targets": [
+        "K-OgR9",
+        "I"
+      ]
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+settings: {}
+examples: ./.resources/Create a flag (always starts off).resources/examples
+order: 2000

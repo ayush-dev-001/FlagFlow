@@ -13,11 +13,23 @@ const schema = z
     DASHBOARD_ORIGIN: z.url(),
     // Proxy hops in front of the API. 0 ignores X-Forwarded-For, so clients can't spoof their IP past rate limits.
     TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
-    SMTP_URL: z.url({ protocol: /^smtps?$/ }),
+    // Invite email goes out over SMTP, or over Resend's HTTPS API when RESEND_API_KEY is set (port 443:
+    // hosts such as Render's free plan block outbound SMTP ports). One of the two is required.
+    SMTP_URL: z.url({ protocol: /^smtps?$/ }).optional(),
+    RESEND_API_KEY: z
+      .string()
+      .regex(/^re_[A-Za-z0-9_-]{8,}$/, 'must be a Resend API key (re_...)')
+      .optional(),
     MAIL_FROM: z.string().min(3),
     // Multiplies every rate limit. Only the local ZAP scan raises it, so the scanner isn't throttled into
     // testing nothing; the real limits are covered by the attack suite.
     RATE_LIMIT_SCALE: z.coerce.number().int().min(1).max(1000).default(1),
+    // Path to the built dashboard (apps/dashboard/dist). Set in production, where one service serves both.
+    DASHBOARD_DIST: z.string().min(1).optional(),
+  })
+  .refine((e) => e.SMTP_URL !== undefined || e.RESEND_API_KEY !== undefined, {
+    path: ['SMTP_URL'],
+    message: 'set SMTP_URL or RESEND_API_KEY',
   })
   .refine((e) => e.NODE_ENV !== 'production' || e.RATE_LIMIT_SCALE === 1, {
     path: ['RATE_LIMIT_SCALE'],
@@ -28,7 +40,11 @@ export type Env = z.infer<typeof schema>;
 
 /** Parses and validates the environment. Errors name the bad keys but never echo their values. */
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const result = schema.safeParse(source);
+  // On Render the API serves the dashboard itself, so its own public URL is the dashboard origin.
+  const result = schema.safeParse({
+    ...source,
+    DASHBOARD_ORIGIN: source.DASHBOARD_ORIGIN ?? source.RENDER_EXTERNAL_URL,
+  });
   if (!result.success) {
     const problems = result.error.issues.map((i) => `  ${i.path.join('.')}: ${i.message}`).join('\n');
     throw new Error(`Invalid environment:\n${problems}`);

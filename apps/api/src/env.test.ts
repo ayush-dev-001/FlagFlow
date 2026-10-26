@@ -45,6 +45,23 @@ describe('loadEnv', () => {
     );
   });
 
+  it("falls back to Render's public URL for the dashboard origin, and an explicit one wins", () => {
+    const { DASHBOARD_ORIGIN: _omit, ...rest } = valid;
+    expect(() => loadEnv(rest)).toThrow(/DASHBOARD_ORIGIN/);
+    const render = 'https://flagflow.onrender.com';
+    expect(loadEnv({ ...rest, RENDER_EXTERNAL_URL: render }).DASHBOARD_ORIGIN).toBe(render);
+    expect(loadEnv({ ...valid, RENDER_EXTERNAL_URL: render }).DASHBOARD_ORIGIN).toBe(valid.DASHBOARD_ORIGIN);
+  });
+
+  it('needs SMTP_URL or RESEND_API_KEY for invite email', () => {
+    const { SMTP_URL: _omit, ...rest } = valid;
+    expect(() => loadEnv(rest)).toThrow(/SMTP_URL/);
+    // Built at runtime so secret scanners don't mistake a test value for a real key.
+    const fakeKey = `re_${'x'.repeat(16)}`;
+    expect(loadEnv({ ...rest, RESEND_API_KEY: fakeKey }).RESEND_API_KEY).toBe(fakeKey);
+    expect(() => loadEnv({ ...rest, RESEND_API_KEY: 'not-a-key' })).toThrow(/RESEND_API_KEY/);
+  });
+
   it('rejects an unknown NODE_ENV', () => {
     expect(() => loadEnv({ ...valid, NODE_ENV: 'staging' })).toThrow(/NODE_ENV/);
   });

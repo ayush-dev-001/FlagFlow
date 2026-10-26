@@ -1,0 +1,12 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/api/auth/me'
+order: 3000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('the bearer token identifies the new admin', () => {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().user.email).to.eql(pm.collectionVariables.get('smokeEmail'));
+      });

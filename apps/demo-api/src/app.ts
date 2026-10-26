@@ -62,7 +62,9 @@ function userOf(req: Request, res: Response): string | null {
   return raw;
 }
 
-export function createDemoApp({ flags, webOrigin, heartbeatMs = 25_000 }: DemoAppOptions) {
+export function createDemoApp({ flags, webOrigin: configured, heartbeatMs = 25_000 }: DemoAppOptions) {
+  // Browsers send the origin without a trailing slash; a URL pasted with one would otherwise never match.
+  const webOrigin = configured.trim().replace(/\/+$/, '');
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '16kb' }));
@@ -89,7 +91,12 @@ export function createDemoApp({ flags, webOrigin, heartbeatMs = 25_000 }: DemoAp
   });
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', flagflow: flags.state(), version: flags.version() });
+    res.json({
+      status: 'ok',
+      flagflow: flags.state(),
+      version: flags.version(),
+      lastError: flags.lastError?.() ?? null,
+    });
   });
 
   app.get('/api/users', (_req, res) => {

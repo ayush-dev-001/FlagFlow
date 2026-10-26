@@ -1,0 +1,27 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/flags'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "key": "smoke_flag",
+      "description": "Created by the smoke collection",
+      "targets": ["U001"]
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('a new flag starts off, in Inactive, with its target', () => {
+        pm.response.to.have.status(201);
+        const flag = pm.response.json().flag;
+        pm.expect(flag.enabled).to.eql(false);
+        pm.expect(flag.state).to.eql('inactive');
+        pm.expect(flag.targets).to.eql(['U001']);
+        pm.collectionVariables.set('flagId', flag.id);
+      });

@@ -147,14 +147,25 @@ export function teamRouter({
       return { invite, org, inviter };
     });
 
-    await mailer.sendInvite({
-      to: email,
-      organizationName: org.name,
-      inviterName: inviter.name,
-      role,
-      link: `${dashboardOrigin}/invite/${token}`,
-      expiresAt,
-    });
+    try {
+      await mailer.sendInvite({
+        to: email,
+        organizationName: org.name,
+        inviterName: inviter.name,
+        role,
+        link: `${dashboardOrigin}/invite/${token}`,
+        expiresAt,
+      });
+    } catch (err) {
+      // Nobody can use an invite whose email never left: cancel it, so it doesn't sit there pending.
+      req.log.error({ err, inviteId: invite.id }, 'invite email could not be sent');
+      await prisma.invite.update({ where: { id: invite.id }, data: { status: 'REVOKED' } });
+      throw new AppError(
+        502,
+        'EMAIL_NOT_SENT',
+        'The invite email could not be sent, so the invite was cancelled. Check the email settings and try again.',
+      );
+    }
     res.status(201).json({ invite: toInvite(invite) });
   });
 

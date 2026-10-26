@@ -1,0 +1,16 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/flags?search=string&state=string"
+method: GET
+headers:
+  Accept: application/json
+queryParams:
+  search: string
+  state: string
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+settings: {}
+examples: ./.resources/Flags, filterable by search text and board state.resources/examples
+order: 1000

@@ -1,0 +1,7 @@
+$kind: http-request
+description: ""
+url: "{{baseUrl}}/api/health"
+method: GET
+settings: {}
+examples: ./.resources/Health of Postgres and Redis.resources/examples
+order: 1000

@@ -1,0 +1,14 @@
+$kind: http-request
+method: POST
+url: '{{baseUrl}}/api/flags/{{flagId}}/toggle'
+order: 5000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('on with a target list means Testing', () => {
+        pm.response.to.have.status(200);
+        const flag = pm.response.json().flag;
+        pm.expect(flag.enabled).to.eql(true);
+        pm.expect(flag.state).to.eql('testing');
+      });

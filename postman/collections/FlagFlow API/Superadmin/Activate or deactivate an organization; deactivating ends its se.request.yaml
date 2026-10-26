@@ -1,0 +1,26 @@
+$kind: http-request
+name: Activate or deactivate an organization; deactivating ends its sessions and streams (superadmin)
+description: ""
+url: "{{baseUrl}}/api/admin/organizations/:id"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Accept: application/json
+pathVariables:
+  - key: id
+    value: string
+    disabled: false
+    description: "(Required) "
+body:
+  type: json
+  content: |-
+    {
+      "isActive": false
+    }
+auth:
+  type: bearer
+  credentials:
+    token: "{{bearerToken}}"
+settings: {}
+examples: ./.resources/Activate or deactivate an organization; deactivating ends its se.resources/examples
+order: 2000

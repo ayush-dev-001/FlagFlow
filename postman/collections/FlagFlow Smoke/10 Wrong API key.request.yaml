@@ -1,0 +1,17 @@
+$kind: http-request
+method: GET
+url: '{{baseUrl}}/v1/flags/evaluate?userId=U001'
+order: 10000
+auth:
+  type: noauth
+headers:
+  - key: x-api-key
+    value: ff_live_00000000000000000000000000000000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test('a wrong key is refused', () => {
+        pm.response.to.have.status(401);
+        pm.expect(pm.response.json().error.code).to.eql('INVALID_API_KEY');
+      });

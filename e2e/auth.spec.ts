@@ -98,6 +98,7 @@ test('register validates fields with messages next to them', async ({ page, cons
 });
 
 test('an invited member joins from the email link', async ({ page, request }) => {
+  test.skip(!!process.env.E2E_BASE_URL, 'reads the invite email from the local Mailpit');
   const admin = newAccount();
   const reg = await request.post('http://localhost:4020/api/auth/register', {
     data: { name: admin.name, email: admin.email, password: admin.password, organizationName: admin.org },
