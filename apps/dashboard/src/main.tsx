@@ -6,6 +6,7 @@ import { RouterProvider } from 'react-router';
 import { AuthProvider } from './auth/AuthProvider';
 import { router } from './router';
 import { Backdrop } from './ui/Backdrop';
+import { ToastProvider } from './ui/toast';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -20,10 +21,12 @@ createRoot(root).render(
     <QueryClientProvider client={queryClient}>
       {/* "user" follows the OS setting: with reduced motion, transforms are skipped and fades kept. */}
       <MotionConfig reducedMotion="user">
-        <AuthProvider>
-          <Backdrop />
-          <RouterProvider router={router} />
-        </AuthProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Backdrop />
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </ToastProvider>
       </MotionConfig>
     </QueryClientProvider>
   </StrictMode>,

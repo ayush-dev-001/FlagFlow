@@ -230,6 +230,22 @@ describe('GET /v1/stream', { timeout: 30_000 }, () => {
     expect((await stream()).status).toBe(429);
   });
 
+  it('counts connected clients per org for the dashboard', async () => {
+    const { admin, stream } = await orgWithFlag();
+    const other = await orgWithFlag();
+    const count = async (token = admin.accessToken) =>
+      (await request(app).get('/api/flags/connections').set(bearer(token)).expect(200)).body
+        .connectedClients as number;
+    expect(await count()).toBe(0);
+    const open = await Promise.all([stream(), stream()]);
+    await other.stream();
+    expect(await count()).toBe(2);
+    expect(await count(other.admin.accessToken)).toBe(1);
+    open[0].close();
+    await new Promise((r) => setTimeout(r, 200));
+    expect(await count()).toBe(1);
+  });
+
   it('frees a slot when a stream closes', async () => {
     const { stream } = await orgWithFlag();
     const open = await Promise.all([stream(), stream(), stream()]);

@@ -1,59 +1,295 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-25T18:00:00.000Z",
+  "generatedAt": "2026-10-26T12:00:00.000Z",
   "title": "Design System: FlagFlow",
   "extensions": {
     "colorMeta": {
-      "ink": { "role": "neutral", "displayName": "Ink", "canonical": "oklch(15.5% 0.004 160)", "tonalRamp": ["oklch(15% 0.004 160)", "oklch(26% 0.004 160)", "oklch(37% 0.004 160)", "oklch(48% 0.004 160)", "oklch(60% 0.004 160)", "oklch(71% 0.004 160)", "oklch(83% 0.004 160)", "oklch(95% 0.004 160)"] },
-      "sidebar": { "role": "neutral", "displayName": "Sidebar Ink" },
-      "surface": { "role": "neutral", "displayName": "Card Ink", "canonical": "oklch(20% 0.005 160)" },
-      "feature-card": { "role": "neutral", "displayName": "Feature Ink" },
-      "raised": { "role": "neutral", "displayName": "Raised Ink" },
-      "hover": { "role": "neutral", "displayName": "Hover Ink" },
-      "line": { "role": "neutral", "displayName": "Hairline" },
-      "text": { "role": "neutral", "displayName": "White" },
-      "muted": { "role": "neutral", "displayName": "Muted" },
-      "subtle": { "role": "neutral", "displayName": "Subtle" },
-      "lime": { "role": "primary", "displayName": "Signal Lime", "canonical": "oklch(89% 0.19 125)", "tonalRamp": ["oklch(15% 0.08 125)", "oklch(26% 0.12 125)", "oklch(37% 0.15 125)", "oklch(48% 0.17 125)", "oklch(60% 0.19 125)", "oklch(71% 0.19 125)", "oklch(83% 0.19 125)", "oklch(95% 0.1 125)"] },
-      "lime-soft": { "role": "primary", "displayName": "Lime Wash" },
-      "iris": { "role": "secondary", "displayName": "Iris (Testing)", "canonical": "oklch(56% 0.22 283)", "tonalRamp": ["oklch(15% 0.1 283)", "oklch(26% 0.15 283)", "oklch(37% 0.19 283)", "oklch(48% 0.22 283)", "oklch(60% 0.2 283)", "oklch(71% 0.15 283)", "oklch(83% 0.09 283)", "oklch(95% 0.03 283)"] },
-      "iris-text": { "role": "secondary", "displayName": "Iris Text", "canonical": "oklch(73% 0.14 287)" },
-      "iris-soft": { "role": "secondary", "displayName": "Iris Wash" },
-      "off": { "role": "neutral", "displayName": "Inactive Grey" },
-      "off-soft": { "role": "neutral", "displayName": "Inactive Wash" },
-      "flame": { "role": "tertiary", "displayName": "Flame (Danger)", "canonical": "oklch(68% 0.21 37)", "tonalRamp": ["oklch(15% 0.06 37)", "oklch(26% 0.1 37)", "oklch(37% 0.14 37)", "oklch(48% 0.18 37)", "oklch(60% 0.21 37)", "oklch(71% 0.19 37)", "oklch(83% 0.11 37)", "oklch(95% 0.03 37)"] },
-      "flame-soft": { "role": "tertiary", "displayName": "Flame Wash" }
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(15.5% 0.004 160)",
+        "tonalRamp": [
+          "oklch(15% 0.004 160)",
+          "oklch(26% 0.004 160)",
+          "oklch(37% 0.004 160)",
+          "oklch(48% 0.004 160)",
+          "oklch(60% 0.004 160)",
+          "oklch(71% 0.004 160)",
+          "oklch(83% 0.004 160)",
+          "oklch(95% 0.004 160)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar Ink"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Card Ink",
+        "canonical": "oklch(20% 0.005 160)"
+      },
+      "feature-card": {
+        "role": "neutral",
+        "displayName": "Feature Ink"
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Raised Ink"
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover Ink"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline"
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "White"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted"
+      },
+      "subtle": {
+        "role": "neutral",
+        "displayName": "Subtle"
+      },
+      "lime": {
+        "role": "primary",
+        "displayName": "Signal Lime",
+        "canonical": "oklch(89% 0.19 125)",
+        "tonalRamp": [
+          "oklch(15% 0.08 125)",
+          "oklch(26% 0.12 125)",
+          "oklch(37% 0.15 125)",
+          "oklch(48% 0.17 125)",
+          "oklch(60% 0.19 125)",
+          "oklch(71% 0.19 125)",
+          "oklch(83% 0.19 125)",
+          "oklch(95% 0.1 125)"
+        ]
+      },
+      "lime-soft": {
+        "role": "primary",
+        "displayName": "Lime Wash"
+      },
+      "iris": {
+        "role": "secondary",
+        "displayName": "Iris (Testing)",
+        "canonical": "oklch(56% 0.22 283)",
+        "tonalRamp": [
+          "oklch(15% 0.1 283)",
+          "oklch(26% 0.15 283)",
+          "oklch(37% 0.19 283)",
+          "oklch(48% 0.22 283)",
+          "oklch(60% 0.2 283)",
+          "oklch(71% 0.15 283)",
+          "oklch(83% 0.09 283)",
+          "oklch(95% 0.03 283)"
+        ]
+      },
+      "iris-text": {
+        "role": "secondary",
+        "displayName": "Iris Text",
+        "canonical": "oklch(73% 0.14 287)"
+      },
+      "iris-soft": {
+        "role": "secondary",
+        "displayName": "Iris Wash"
+      },
+      "off": {
+        "role": "neutral",
+        "displayName": "Inactive Grey"
+      },
+      "off-soft": {
+        "role": "neutral",
+        "displayName": "Inactive Wash"
+      },
+      "flame": {
+        "role": "tertiary",
+        "displayName": "Flame (Danger)",
+        "canonical": "oklch(68% 0.21 37)",
+        "tonalRamp": [
+          "oklch(15% 0.06 37)",
+          "oklch(26% 0.1 37)",
+          "oklch(37% 0.14 37)",
+          "oklch(48% 0.18 37)",
+          "oklch(60% 0.21 37)",
+          "oklch(71% 0.19 37)",
+          "oklch(83% 0.11 37)",
+          "oklch(95% 0.03 37)"
+        ]
+      },
+      "flame-soft": {
+        "role": "tertiary",
+        "displayName": "Flame Wash"
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Home page hero and section headlines. Bold Title Case." },
-      "headline": { "displayName": "Headline", "purpose": "Auth page titles." },
-      "title": { "displayName": "Title", "purpose": "App page header titles, 404 and error titles." },
-      "card-title": { "displayName": "Card Title", "purpose": "Titles inside cards and plan names." },
-      "lead": { "displayName": "Lead", "purpose": "Auth sublines and section leads at white 55%." },
-      "body": { "displayName": "Body", "purpose": "Fields, labels, alerts, nav items, working copy." },
-      "label": { "displayName": "Label", "purpose": "State pills, hints, errors, nav group titles. Sentence case." },
-      "mono": { "displayName": "Mono", "purpose": "Keys and IDs only." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home page hero and section headlines. Bold Title Case."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Auth page titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "App page header titles, 404 and error titles."
+      },
+      "card-title": {
+        "displayName": "Card Title",
+        "purpose": "Titles inside cards and plan names."
+      },
+      "dialog-title": {
+        "displayName": "Dialog Title",
+        "purpose": "Dialog titles and the On/Off word in a flag status panel."
+      },
+      "panel-title": {
+        "displayName": "Panel Title",
+        "purpose": "Panel title rows and empty/error state titles. Title Case."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Auth sublines and section leads at white 55%."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Fields, labels, alerts, nav items, working copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "State pills, hints, errors, nav group titles. Sentence case."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Keys and IDs only."
+      },
+      "key-title": {
+        "displayName": "Key Title",
+        "purpose": "The flag detail page title, which is the flag key itself. Mono because it is a key."
+      }
     },
     "shadows": [
-      { "name": "live-dot-glow", "value": "0 0 10px #c4f04a", "purpose": "On-dots such as the Live state dot. A light, not a shadow." },
-      { "name": "focus-halo", "value": "0 0 0 3px rgb(196 240 74 / 0.18)", "purpose": "Focused inputs, with the border at lime 70%." },
-      { "name": "atmosphere-glow", "value": "lime 45% and 25% circles, ~120px blur, lower corners (signed-in shell: 13% and 7%)", "purpose": "Ambient light on the home, auth and app grounds." }
+      {
+        "name": "live-dot-glow",
+        "value": "0 0 10px #c4f04a",
+        "purpose": "On-dots such as the Live state dot. A light, not a shadow."
+      },
+      {
+        "name": "focus-halo",
+        "value": "0 0 0 3px rgb(196 240 74 / 0.18)",
+        "purpose": "Focused inputs, with the border at lime 70%."
+      },
+      {
+        "name": "atmosphere-glow",
+        "value": "lime 45% and 25% circles, ~120px blur, lower corners (signed-in shell: 13% and 7%)",
+        "purpose": "Ambient light on the home, auth and app grounds."
+      },
+      {
+        "name": "toast-drop",
+        "value": "0 20px 50px -20px rgb(0 0 0 / 0.9)",
+        "purpose": "Toasts only: the one layer that floats over working content without a veil. Dark lift, not light."
+      },
+      {
+        "name": "dialog-veil",
+        "value": "::backdrop rgb(11 13 12 / 0.72), backdrop-filter blur(3px)",
+        "purpose": "Behind every dialog. The dialog itself has no shadow."
+      }
     ],
     "motion": [
-      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The single easing for UI motion." },
-      { "name": "ease-in-out-quart", "value": "cubic-bezier(0.76, 0, 0.24, 1)", "purpose": "Defined token; reserved for long ambient movement." },
-      { "name": "duration-fast", "value": "160ms", "purpose": "Scrims and small state changes." },
-      { "name": "duration-base", "value": "240ms", "purpose": "Content rise and drawer slide." },
-      { "name": "duration-slow", "value": "420ms", "purpose": "Larger arrivals." },
-      { "name": "rise", "value": "opacity 0 to 1, translateY 6px to 0; exit -4px", "purpose": "App content arriving." },
-      { "name": "reveal", "value": "opacity 0 to 1, translateY 14px to 0, 700ms, 80ms stagger", "purpose": "Home hero, auth title, form and illustration panel." },
-      { "name": "spring-settle", "value": "spring stiffness 520, damping 38, mass 0.8", "purpose": "Things that settle, such as a toggle knob." },
-      { "name": "key-resolve", "value": "masked to real characters left to right over 700ms", "purpose": "The one-time API key reveal." }
+      {
+        "name": "ease-out-expo",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The single easing for UI motion."
+      },
+      {
+        "name": "ease-in-out-quart",
+        "value": "cubic-bezier(0.76, 0, 0.24, 1)",
+        "purpose": "Defined token; reserved for long ambient movement."
+      },
+      {
+        "name": "duration-fast",
+        "value": "160ms",
+        "purpose": "Scrims and small state changes."
+      },
+      {
+        "name": "duration-base",
+        "value": "240ms",
+        "purpose": "Content rise and drawer slide."
+      },
+      {
+        "name": "duration-slow",
+        "value": "420ms",
+        "purpose": "Larger arrivals."
+      },
+      {
+        "name": "rise",
+        "value": "opacity 0 to 1, translateY 6px to 0; exit -4px",
+        "purpose": "App content arriving."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity 0 to 1, translateY 14px to 0, 700ms, 80ms stagger",
+        "purpose": "Home hero, auth title, form and illustration panel."
+      },
+      {
+        "name": "spring-settle",
+        "value": "spring stiffness 520, damping 38, mass 0.8",
+        "purpose": "Things that settle, such as a toggle knob."
+      },
+      {
+        "name": "key-resolve",
+        "value": "masked to real characters left to right over 700ms",
+        "purpose": "The one-time API key reveal."
+      },
+      {
+        "name": "dialog-in",
+        "value": "opacity 0 to 1, translateY 8px and scale 0.985 to rest, 240ms ease-out-expo; veil fades over 240ms",
+        "purpose": "Dialogs arriving. Reduced motion keeps only the fade."
+      },
+      {
+        "name": "toast-in",
+        "value": "opacity 0 to 1, translateY 10px to 0, 240ms; exit 6px down",
+        "purpose": "Toasts. Success leaves after 3.5s, errors after 6s."
+      },
+      {
+        "name": "segment-slide",
+        "value": "shared-layout pill move, 240ms ease-out-expo",
+        "purpose": "The segmented control pill moving to the chosen option."
+      },
+      {
+        "name": "board-move",
+        "value": "shared-layout position move, 240ms ease-out-expo",
+        "purpose": "A flag card sliding to its new state column."
+      },
+      {
+        "name": "chip-pop",
+        "value": "opacity 0 to 1, scale 0.94 to 1, 160ms",
+        "purpose": "ID chips added to or removed from an audience."
+      },
+      {
+        "name": "connected-ping",
+        "value": "Tailwind animate-ping on the lime dot; hidden under reduced motion",
+        "purpose": "The connected badge while at least one SDK stream is open."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "md", "value": "768px" },
-      { "name": "lg", "value": "1024px" }
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
     ]
   },
   "components": [
@@ -122,6 +358,62 @@
       "css": ".ds-card{padding:32px;border:1px solid rgb(255 255 255/0.06);border-radius:20px;background:#151817;font-family:'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif}.ds-card-title{margin:0 0 20px;font-size:19px;font-weight:600;letter-spacing:-0.02em;color:#fff}.ds-code{display:block;padding:12px 14px;border:1px solid rgb(255 255 255/0.1);border-radius:9px;background:rgb(11 13 12/0.7);color:#c4f04a;font:14px/1.625 'Geist Mono Variable',ui-monospace,monospace;font-variant-numeric:tabular-nums;word-break:break-all}"
     },
     {
+      "name": "Switch",
+      "kind": "custom",
+      "refersTo": "switch-on",
+      "description": "The on/off control. Lime track and ink knob when on; white 12% track and white knob when off.",
+      "html": "<button class=\"ds-switch\" role=\"switch\" aria-checked=\"true\" aria-label=\"Turn new_checkout off\"><span class=\"ds-switch-knob\"></span></button> <button class=\"ds-switch\" role=\"switch\" aria-checked=\"false\" aria-label=\"Turn dark_mode on\"><span class=\"ds-switch-knob\"></span></button>",
+      "css": ".ds-switch{position:relative;display:inline-flex;align-items:center;width:40px;height:24px;padding:3px;border:none;border-radius:9999px;background:rgb(255 255 255/0.12);cursor:pointer;transition:background-color 200ms ease-out}.ds-switch:hover{background:rgb(255 255 255/0.18)}.ds-switch-knob{display:block;width:18px;height:18px;border-radius:9999px;background:#fff;transition:transform 240ms cubic-bezier(0.16,1,0.3,1)}.ds-switch[aria-checked=\"true\"]{background:#c4f04a}.ds-switch[aria-checked=\"true\"] .ds-switch-knob{background:#0b0d0c;transform:translateX(16px)}.ds-switch:focus-visible{outline:2px solid #c4f04a;outline-offset:2px}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The working container of signed-in screens: 20px Card Ink with a 17px semibold title row on a white/6 hairline.",
+      "html": "<section class=\"ds-panel\" aria-labelledby=\"ds-panel-t\"><header class=\"ds-panel-head\"><h2 id=\"ds-panel-t\" class=\"ds-panel-title\">Audience</h2><p class=\"ds-panel-desc\">Who gets this flag while it is on.</p></header><div class=\"ds-panel-body\"><span class=\"ds-chip\">U001<button class=\"ds-chip-x\" aria-label=\"Remove U001\">&times;</button></span></div></section>",
+      "css": ".ds-panel{border:1px solid rgb(255 255 255/0.06);border-radius:20px;background:#151817;color:#fff;font-family:'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif}.ds-panel-head{padding:16px 24px;border-bottom:1px solid rgb(255 255 255/0.06)}.ds-panel-title{margin:0;font-size:17px;font-weight:600;letter-spacing:-0.02em}.ds-panel-desc{margin:4px 0 0;font-size:14px;color:rgb(255 255 255/0.55)}.ds-panel-body{padding:24px}.ds-chip{display:inline-flex;align-items:center;gap:4px;height:32px;padding:0 4px 0 12px;border:1px solid rgb(255 255 255/0.08);border-radius:9999px;background:rgb(255 255 255/0.04);font:13px 'Geist Mono Variable',ui-monospace,monospace;color:#fff}.ds-chip-x{display:grid;place-items:center;width:24px;height:24px;border:none;border-radius:9999px;background:transparent;color:#868a88;cursor:pointer}.ds-chip-x:hover{background:rgb(255 255 255/0.08);color:#fff}.ds-chip-x:focus-visible{outline:2px solid #c4f04a;outline-offset:2px}"
+    },
+    {
+      "name": "Flag Card",
+      "kind": "card",
+      "refersTo": "flag-card",
+      "description": "A board card: the mono key is a stretched link over the card; the switch sits above it.",
+      "html": "<div class=\"ds-fcard\"><div class=\"ds-fcard-top\"><a class=\"ds-fcard-key\" href=\"#\">new_checkout</a><button class=\"ds-switch-sm\" role=\"switch\" aria-checked=\"true\" aria-label=\"new_checkout on\"><span></span></button></div><p class=\"ds-fcard-desc\">Redesigned checkout</p><div class=\"ds-fcard-meta\"><span>2 listed users</span><time title=\"Oct 26, 2026, 12:00 PM\">just now</time></div></div>",
+      "css": ".ds-fcard{position:relative;display:flex;flex-direction:column;gap:12px;max-width:340px;padding:16px;border:1px solid rgb(255 255 255/0.06);border-radius:16px;background:#151817;font-family:'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif;transition:background-color 150ms,border-color 150ms}.ds-fcard:hover{border-color:rgb(255 255 255/0.12);background:#1c1f1e}.ds-fcard-top{display:flex;justify-content:space-between;gap:12px}.ds-fcard-key{font:14px/24px 'Geist Mono Variable',ui-monospace,monospace;color:#fff;text-decoration:none}.ds-fcard-key::after{content:\"\";position:absolute;inset:0;border-radius:16px}.ds-fcard-key:focus-visible{outline:none}.ds-fcard-key:focus-visible::after{outline:2px solid #c4f04a}.ds-switch-sm{position:relative;z-index:1;display:inline-flex;align-items:center;width:40px;height:24px;padding:3px;border:none;border-radius:9999px;background:#c4f04a}.ds-switch-sm span{width:18px;height:18px;border-radius:9999px;background:#0b0d0c;transform:translateX(16px)}.ds-fcard-desc{margin:0;font-size:14px;color:rgb(255 255 255/0.55)}.ds-fcard-meta{display:flex;justify-content:space-between;font-size:13px;color:#868a88}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-item-active",
+      "description": "One choice from a few. The chosen option is white on a white 9% pill, never lime.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\" aria-label=\"Show\"><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"true\">All</button><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"false\">Inactive</button><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"false\">Testing</button><button class=\"ds-seg-item\" role=\"radio\" aria-checked=\"false\">Live</button></div>",
+      "css": ".ds-seg{display:flex;width:380px;padding:4px;border-radius:9px;background:rgb(255 255 255/0.04);font-family:'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif}.ds-seg-item{flex:1;height:36px;padding:0 12px;border:none;border-radius:7px;background:transparent;color:rgb(255 255 255/0.55);font-size:14px;font-weight:500;cursor:pointer;transition:color 150ms,background-color 240ms cubic-bezier(0.16,1,0.3,1)}.ds-seg-item:hover{color:#fff}.ds-seg-item[aria-checked=\"true\"]{background:rgb(255 255 255/0.09);color:#fff}.ds-seg-item:focus-visible{outline:2px solid #c4f04a;outline-offset:2px}"
+    },
+    {
+      "name": "Connected Badge",
+      "kind": "chip",
+      "refersTo": "connected-badge-on",
+      "description": "Whether any app has a live stream open. Lime and pulsing when at least one is connected.",
+      "html": "<span class=\"ds-conn ds-conn-on\"><span class=\"ds-conn-dot\"></span>2 apps connected</span> <span class=\"ds-conn\"><span class=\"ds-conn-dot\"></span>No apps connected</span>",
+      "css": ".ds-conn{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border:1px solid rgb(255 255 255/0.08);border-radius:9999px;background:rgb(255 255 255/0.03);color:#a2a5a3;font:500 13px 'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif;white-space:nowrap}.ds-conn-dot{width:8px;height:8px;border-radius:9999px;background:#8a8e8c}.ds-conn-on{border-color:rgb(196 240 74/0.25);background:rgb(196 240 74/0.12);color:#c4f04a}.ds-conn-on .ds-conn-dot{background:#c4f04a;animation:ds-ping 1s cubic-bezier(0,0,0.2,1) infinite}@keyframes ds-ping{50%{box-shadow:0 0 0 4px rgb(196 240 74/0.35)}100%{box-shadow:0 0 0 6px rgb(196 240 74/0)}}@media (prefers-reduced-motion:reduce){.ds-conn-on .ds-conn-dot{animation:none}}"
+    },
+    {
+      "name": "Confirm Dialog",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "A native dialog over an ink veil; the danger button repeats the action.",
+      "html": "<div class=\"ds-dialog\" role=\"dialog\" aria-labelledby=\"ds-dlg-t\"><div class=\"ds-dialog-head\"><h2 id=\"ds-dlg-t\" class=\"ds-dialog-title\">Delete new_checkout?</h2><button class=\"ds-dialog-x\" aria-label=\"Close\">&times;</button></div><p class=\"ds-dialog-desc\">This removes the flag and its 2 listed users. Connected apps see it disappear at once.</p><div class=\"ds-dialog-actions\"><button class=\"ds-dbtn\">Cancel</button><button class=\"ds-dbtn ds-dbtn-danger\">Delete flag</button></div></div>",
+      "css": ".ds-dialog{max-width:460px;padding:28px;border:1px solid rgb(255 255 255/0.08);border-radius:20px;background:#151817;color:#fff;font-family:'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif;animation:ds-rise 240ms cubic-bezier(0.16,1,0.3,1)}@keyframes ds-rise{from{opacity:0;transform:translateY(8px) scale(0.985)}}.ds-dialog-head{display:flex;justify-content:space-between;gap:16px}.ds-dialog-title{margin:0;font-size:22px;line-height:1.25;font-weight:700;letter-spacing:-0.04em}.ds-dialog-x{width:36px;height:36px;margin:-4px -8px 0 0;border:none;border-radius:9px;background:transparent;color:#a2a5a3;font-size:18px;cursor:pointer}.ds-dialog-x:hover{background:rgb(255 255 255/0.06);color:#fff}.ds-dialog-desc{margin:8px 0 0;font-size:15px;color:rgb(255 255 255/0.55)}.ds-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}.ds-dbtn{height:40px;padding:0 16px;border:none;border-radius:9px;background:rgb(255 255 255/0.05);color:#fff;font:600 14px 'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif;cursor:pointer}.ds-dbtn:hover{background:rgb(255 255 255/0.09)}.ds-dbtn-danger{border:1px solid rgb(255 90 36/0.3);background:rgb(255 90 36/0.12);color:#ff5a24}.ds-dbtn-danger:hover{background:rgb(255 90 36/0.2)}.ds-dialog button:focus-visible{outline:2px solid #c4f04a;outline-offset:2px}"
+    },
+    {
+      "name": "Toast",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "Confirms a change. Lime check for success, flame icon for errors; a polite live region.",
+      "html": "<div class=\"ds-toasts\" aria-live=\"polite\"><div class=\"ds-toast\" role=\"status\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"#c4f04a\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg>new_checkout is on</div><div class=\"ds-toast\" role=\"alert\"><svg viewBox=\"0 0 24 24\" width=\"16\" height=\"16\" fill=\"none\" stroke=\"#ff5a24\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/></svg>Couldn't reach the server</div></div>",
+      "css": ".ds-toasts{display:flex;flex-direction:column;align-items:flex-end;gap:8px}.ds-toast{display:flex;align-items:center;gap:10px;max-width:380px;padding:12px 16px;border:1px solid rgb(255 255 255/0.08);border-radius:9px;background:#1c1f1e;color:#fff;font:15px 'Inter Tight Variable',ui-sans-serif,system-ui,sans-serif;box-shadow:0 20px 50px -20px rgb(0 0 0/0.9);animation:ds-toast-in 240ms cubic-bezier(0.16,1,0.3,1)}.ds-toast svg{flex-shrink:0}@keyframes ds-toast-in{from{opacity:0;transform:translateY(10px)}}"
+    },
+    {
       "name": "Site Header",
       "kind": "nav",
       "refersTo": "site-header",
@@ -132,7 +424,7 @@
   ],
   "narrative": {
     "northStar": "Lime Is On",
-    "overview": "FlagFlow is one world from the first pixel of the public home page (`apps/dashboard/src/landing/LandingPage.tsx`, the owner's binding visual reference) to the last toggle in the signed-in app. The ground is near-black ink. Content sits on slightly lifted near-black cards with white hairlines. One colour carries meaning: lime. It marks something that is on, the action that will make something go, and the thing that has focus. Nothing else is lime, so a glance at any screen tells you what is live.\n\nThe voice is bold and tight. Headlines are Inter Tight at weight 700, Title Case, with heavy negative tracking. Reading text is white at 55 to 60% opacity. Geist Mono shows up only for strings a person would copy into code. The home page carries the richest version of the world: a floating glass header, side rails, faint arcs, lime sparkles, and lime glows bleeding up from the lower corners. The auth pages drop the header and split into the form and a panel holding the owner's desk illustration, whose monitor mirrors the form. The signed-in shell keeps only the two corner glows, faint enough to work under.\n\nMotion uses one exponential ease-out. Content rises a few pixels as it arrives, on-states settle in, and everything honours `prefers-reduced-motion`.",
+    "overview": "FlagFlow is one world from the first pixel of the public home page (`apps/dashboard/src/landing/LandingPage.tsx`, the owner's binding visual reference) to the last toggle in the signed-in app. The ground is near-black ink. Content sits on slightly lifted near-black cards with white hairlines. One colour carries meaning: lime. It marks something that is on, the action that will make something go, and the thing that has focus. Nothing else is lime, so a glance at any screen tells you what is live.\n\nThe voice is bold and tight. Headlines are Inter Tight at weight 700, Title Case, with heavy negative tracking. Reading text is white at 55 to 60% opacity. Geist Mono shows up only for strings a person would copy into code. The home page carries the richest version of the world: a floating glass header, side rails, faint arcs, lime sparkles, and lime glows bleeding up from the lower corners. The auth pages drop the header and split into form and illustration. The signed-in shell keeps only the two corner glows, faint enough to work under. Its screens are built from panels: near-black 20px cards with a title row, switches that turn lime when a flag is on, and a toast that confirms each change.\n\nMotion uses one exponential ease-out. Content rises a few pixels as it arrives, on-states settle in, and everything honours `prefers-reduced-motion`.",
     "keyCharacteristics": [
       "Ink ground (#0b0d0c) with near-black cards and white hairlines at 6 to 12%.",
       "Lime (#c4f04a) only for on, go and focus. Ink text on lime fills.",
@@ -142,15 +434,66 @@
       "Atmosphere is lime light, never violet or another hue."
     ],
     "rules": [
-      { "name": "The Lime Is On Rule", "body": "Lime means on, go or focus, and nothing else. Before making anything lime, name which of the three it is. If it is none of them, it is not lime.", "section": "colors" },
-      { "name": "The Three States Rule", "body": "Flag state has exactly three colours: Live lime, Testing iris (text #a59cff), Inactive grey. The off state is always labelled \"Inactive\". Flag state colour comes only through the state pill.", "section": "colors" },
-      { "name": "The Flame Is Danger Rule", "body": "Flame marks destructive actions and errors only. It is never decoration in the app.", "section": "colors" },
-      { "name": "The Lime Light Rule", "body": "Atmospheric light (corner glows, sparkles, the live dot's glow) is lime. No other hue is used for atmosphere.", "section": "colors" },
-      { "name": "The Tight Title Rule", "body": "Headlines are bold Title Case and tracked -0.04 to -0.055em. They balance-wrap and never go uppercase.", "section": "typography" },
-      { "name": "The Machine Text Rule", "body": "Geist Mono is only for keys and IDs, meaning strings a person would copy into code. It is never used for headings, labels or decoration.", "section": "typography" },
-      { "name": "The Glow Means On Rule", "body": "The only component that glows is something that is on. Buttons and cards don't glow at rest.", "section": "elevation" },
-      { "name": "The Opaque Chrome Rule", "body": "The app sidebar and drawer are opaque Sidebar Ink. Only the floating site header (white at 3.5%, medium blur) and the mobile app top bar are translucent.", "section": "elevation" },
-      { "name": "The Three Radii Rule", "body": "Use 9px for controls, 16px for panels and 20px for cards. Other values are reference-page exceptions, not steps on the scale.", "section": "shapes" }
+      {
+        "name": "The Lime Is On Rule",
+        "body": "Lime means on, go or focus, and nothing else. Before making anything lime, name which of the three it is. If it is none of them, it is not lime.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three States Rule",
+        "body": "Flag state has exactly three colours: Live lime, Testing iris (text #a59cff), Inactive grey. The off state is always labelled \"Inactive\". Flag state colour comes only through the state pill.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flame Is Danger Rule",
+        "body": "Flame marks destructive actions and errors only. It is never decoration in the app.",
+        "section": "colors"
+      },
+      {
+        "name": "The Lime Light Rule",
+        "body": "Atmospheric light (corner glows, sparkles, the live dot's glow) is lime. No other hue is used for atmosphere.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tight Title Rule",
+        "body": "Headlines are bold Title Case and tracked -0.04 to -0.055em. They balance-wrap and never go uppercase.",
+        "section": "typography"
+      },
+      {
+        "name": "The Machine Text Rule",
+        "body": "Geist Mono is only for keys and IDs, meaning strings a person would copy into code. When a page is about one key, the key is its title and stays mono (the flag detail page). Mono is never used for headings, labels or decoration that are not themselves a key.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Rule",
+        "body": "Activity reads as sentences, not table cells: the actor in white semibold, the rest at white/60, keys in mono inside the sentence (\"Ada Admin turned new_checkout on\"), and a relative time on the right that gives the exact date on hover.",
+        "section": "typography"
+      },
+      {
+        "name": "The Glow Means On Rule",
+        "body": "The only component that glows is something that is on. Buttons and cards don't glow at rest.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Opaque Chrome Rule",
+        "body": "The app sidebar and drawer are opaque Sidebar Ink. Only the floating site header (white at 3.5%, medium blur) and the mobile app top bar are translucent.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Three Radii Rule",
+        "body": "Use 9px for controls, 16px for panels and 20px for cards. Other values are reference-page exceptions or nested pieces, not steps on the scale.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Neutral Choice Rule",
+        "body": "A chosen option is white on a white 9% pill, never lime. Choosing a filter is not turning something on.",
+        "section": "components"
+      },
+      {
+        "name": "The Name The Action Rule",
+        "body": "A destructive action is confirmed in a dialog whose danger button repeats the action (\"Delete flag\", never \"OK\") beside a secondary Cancel. The title names the thing (\"Delete new_checkout?\") and the body says what happens next.",
+        "section": "components"
+      }
     ],
     "dos": [
       "Do make the whole product match the home page: ink ground, near-black cards, lime as the only signal.",
@@ -161,6 +504,10 @@
       "Do keep to three radii: 9px buttons, 16px panels, 20px cards.",
       "Do give every auth page the two-section layout: form left, the mirroring illustration right, no site header.",
       "Do keep a primary button neutral (white 6% fill, white 40% text) while it is disabled.",
+      "Do use the switch for on and off: lime track and ink knob when on, white 12% track when off, the knob on the spring.",
+      "Do put signed-in content in panels: 20px Card Ink with a 17px semibold title row on a white/6 hairline.",
+      "Do confirm each change with a toast, and confirm destructive actions in a dialog whose danger button names the action.",
+      "Do give every query an empty state, an error state with Try again, and a skeleton while it loads.",
       "Do show landing photographs in greyscale, and give every shipped raster a `.webp.json` provenance sidecar (the four home photos are free-license stock)."
     ],
     "donts": [
@@ -168,7 +515,8 @@
       "Don't use Geist Mono for headings, labels or decoration.",
       "Don't introduce a violet, indigo or other hue as an accent or atmosphere. Iris is Testing only.",
       "Don't make the app sidebar or drawer translucent.",
-      "Don't add a lime glow to buttons or cards. A glow means something is on."
+      "Don't add a lime glow to buttons or cards. A glow means something is on.",
+      "Don't make a chosen segment, filter or tab lime. A choice is white on white 9%."
     ]
   }
 }

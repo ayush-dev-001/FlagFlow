@@ -4,6 +4,7 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import { adminRouter } from './admin/routes.js';
 import { authRouter } from './auth/routes.js';
 import { sessions } from './auth/sessions.js';
 import type { PrismaClient } from './db.js';
@@ -81,21 +82,23 @@ export function createApp({ env, logger, prisma, redis, mailer, streamOptions }:
       dashboardOrigin: env.DASHBOARD_ORIGIN,
     }),
   );
+  const snapshots = snapshotStore(prisma, redis, logger);
+  const streams = new StreamHub(redis, snapshots, logger, streamOptions);
+  (app.locals as AppLocals).streams = streams;
   const { flagsRouter, endUsersRouter, auditRouter } = flagRoutes({
     prisma,
     redis,
     limiters,
     jwtSecret,
     flags: flagService(prisma, redis, logger),
+    connectedClients: (orgId) => streams.connectedClients(orgId),
   });
   app.use('/api/flags', flagsRouter);
   app.use('/api/end-users', endUsersRouter);
   app.use('/api/audit-logs', auditRouter);
   app.use('/api/org', orgRouter({ prisma, redis, limiters, jwtSecret }));
+  app.use('/api/admin', adminRouter({ prisma, redis, limiters, jwtSecret, sessions: userSessions }));
 
-  const snapshots = snapshotStore(prisma, redis, logger);
-  const streams = new StreamHub(redis, snapshots, logger, streamOptions);
-  (app.locals as AppLocals).streams = streams;
   app.use('/v1', publicRouter({ prisma, redis, logger, limiters, snapshots, streams }));
 
   app.use(notFound);

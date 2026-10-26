@@ -55,7 +55,7 @@ test('log in, and a wrong password shows a plain error', async ({ page, consoleE
   await login(page, account.email, account.password);
   await expect(page).toHaveURL(/\/flags$/);
   await openNav(page);
-  await expect(page.getByText(account.org).filter({ visible: true })).toBeVisible();
+  await expect(page.getByText(account.org, { exact: true }).filter({ visible: true })).toBeVisible();
 });
 
 test('the illustration mirrors the login form on wide screens', async ({ page, consoleErrors }, info) => {

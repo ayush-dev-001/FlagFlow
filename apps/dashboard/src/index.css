@@ -197,3 +197,31 @@
   --text-xl: 1.125rem;
   --text-2xl: 1.35rem;
 }
+
+/* Modals (ui/kit Dialog, on the native <dialog>): an ink veil behind, and a short rise in. */
+.dialog::backdrop {
+  background: rgb(11 13 12 / 0.72);
+  backdrop-filter: blur(3px);
+}
+.dialog[open] {
+  animation: dialog-in 240ms var(--ease-out-expo);
+}
+.dialog[open]::backdrop {
+  animation: veil-in 240ms var(--ease-out-expo);
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+@keyframes veil-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog[open] {
+    animation-name: veil-in;
+  }
+}

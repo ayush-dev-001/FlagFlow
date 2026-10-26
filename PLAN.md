@@ -92,7 +92,7 @@ Design: the public home page (`apps/dashboard/src/landing/LandingPage.tsx`) is t
 - **Palette:** near-black ink ground `#0b0d0c` with `#151817` cards. Lime `#c4f04a` is the single accent: primary buttons (with ink text), live state, focus and glows. Flame `#ff5a24` marks danger, iris `#6b5cf6` marks the Testing state.
 - **Type:** Inter Tight throughout. Headlines are bold Title Case with tight tracking (-0.04 to -0.055em). Body text is white at 55–60%. Geist Mono only for keys and IDs.
 - **Shape:** 9px buttons, 16–20px cards, lime glows in the lower corners.
-- **Layout:** the signed-in app uses a sidebar. Login, register and invite pages share the home page's header and atmosphere.
+- **Layout:** the signed-in app uses a sidebar. Login, register and invite are two sections with no site header: the form, and the owner's desk illustration whose monitor mirrors it (owner decision, 2026-10-25).
 - **Flag states:** Live = lime, Testing = iris, Inactive = grey.
 - **Motion:** the visual and motion work uses the Emil Kowalski motion and Impeccable design skills. Easing is purposeful and durations short, motion explains state changes (toggle, card moving between columns, toast), and `prefers-reduced-motion` is respected everywhere.
 

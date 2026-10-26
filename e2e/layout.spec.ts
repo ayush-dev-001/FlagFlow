@@ -53,10 +53,46 @@ test('every screen fits the viewport and is captured for review', async ({ page 
   await noHorizontalScroll(page);
   await shot('flags');
 
+  // Phase 7 screens, with one flag in play so they show real content.
+  await page.getByRole('button', { name: 'Create your first flag' }).click();
+  const dialog = page.getByRole('dialog', { name: 'New Flag' });
+  await shot('flag-new');
+  await dialog.getByLabel('Key').fill('new_checkout');
+  await dialog.getByLabel('Description').fill('Redesigned checkout');
+  await dialog.getByLabel('End-user IDs').fill('U001, U002');
+  await dialog.getByRole('button', { name: 'Create flag' }).click();
+  await expect(dialog).toBeHidden();
+  await page.getByRole('switch', { name: 'new_checkout off' }).click();
+  await expect(
+    page.getByRole('region', { name: 'Testing' }).getByRole('link', { name: 'new_checkout' }),
+  ).toBeVisible();
+  await noHorizontalScroll(page);
+  await shot('flags-board');
+
+  await page.getByRole('link', { name: 'new_checkout' }).click();
+  await expect(page.getByRole('heading', { name: 'new_checkout', level: 1 })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'History' }).getByText(/turned/)).toBeVisible();
+  await noHorizontalScroll(page);
+  await shot('flag-detail');
+
+  for (const [path, heading, name] of [
+    ['/end-users?id=U001', 'End Users', 'end-users'],
+    ['/audit', 'Audit Log', 'audit'],
+    ['/settings', 'Settings', 'settings'],
+  ] as const) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { name: heading, level: 1 })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: /Loading|Looking/ })).toHaveCount(0);
+    await noHorizontalScroll(page);
+    await shot(name);
+  }
+
   await openNav(page);
   await page.getByRole('link', { name: 'Team' }).click();
   await expect(page.getByRole('heading', { name: 'Team', level: 1 })).toBeVisible();
   await noHorizontalScroll(page);
+  await expect(page.getByRole('list', { name: 'Members' })).toBeVisible();
+  await shot('team');
 
   if (tag === 'mobile') {
     await openNav(page);

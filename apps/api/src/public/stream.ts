@@ -24,6 +24,8 @@ interface Connection {
 }
 
 const streamSlotsKey = (keyId: string) => `ff:sse:${keyId}`;
+/** The same slots per org, for the dashboard's connected-clients count. */
+const orgSlotsKey = (orgId: string) => `ff:sse:org:${orgId}`;
 
 /**
  * GET /v1/stream. One Redis subscriber per process (PSUBSCRIBE ff:events:*) fans each event out to the
@@ -96,6 +98,7 @@ export class StreamHub {
     // Claim a stream slot for this key; stale slots (no heartbeat for 3 intervals) are dropped first.
     const slotId = randomUUID();
     const slots = streamSlotsKey(keyId);
+    const orgSlots = orgSlotsKey(orgId);
     const now = Date.now();
     const result = await this.redis
       .multi()
@@ -109,6 +112,7 @@ export class StreamHub {
       await this.redis.zrem(slots, slotId);
       throw new AppError(429, 'TOO_MANY_STREAMS', `At most ${this.maxPerKey} open streams per API key`);
     }
+    await this.redis.multi().zadd(orgSlots, now, slotId).expire(orgSlots, this.slotTtlSeconds()).exec();
 
     await this.subscribe();
 
@@ -142,7 +146,14 @@ export class StreamHub {
     const heartbeat = setInterval(() => {
       if (closed) return;
       res.write(': ping\n\n');
-      this.redis.zadd(slots, Date.now(), slotId).catch(() => {});
+      const at = Date.now();
+      this.redis
+        .multi()
+        .zadd(slots, at, slotId)
+        .zadd(orgSlots, at, slotId)
+        .expire(orgSlots, this.slotTtlSeconds())
+        .exec()
+        .catch(() => {});
     }, this.heartbeatMs);
 
     const cleanup = () => {
@@ -151,7 +162,12 @@ export class StreamHub {
       clearInterval(heartbeat);
       this.index(this.byOrg, orgId, conn, false);
       this.index(this.byKey, keyId, conn, false);
-      this.redis.zrem(slots, slotId).catch(() => {});
+      this.redis
+        .multi()
+        .zrem(slots, slotId)
+        .zrem(orgSlots, slotId)
+        .exec()
+        .catch(() => {});
     };
     req.on('close', cleanup);
 
@@ -177,6 +193,17 @@ export class StreamHub {
       this.logger.error({ err, orgId }, 'could not start stream');
       conn.end({ code: 'STREAM_FAILED', message: 'Could not load flags, reconnect to retry' });
     }
+  }
+
+  private slotTtlSeconds() {
+    return Math.ceil((this.heartbeatMs * 3) / 1000);
+  }
+
+  /** Open SDK streams for an org, across every instance; slots without a recent heartbeat don't count. */
+  async connectedClients(orgId: string): Promise<number> {
+    const key = orgSlotsKey(orgId);
+    await this.redis.zremrangebyscore(key, 0, Date.now() - this.heartbeatMs * 3);
+    return this.redis.zcard(key);
   }
 
   /** Ends every open stream and the subscriber. */

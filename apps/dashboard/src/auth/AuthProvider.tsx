@@ -40,6 +40,8 @@ interface AuthContextValue {
   /** The first API key from registration, held in memory only until the user confirms they stored it. */
   newApiKey: NewApiKey | null;
   dismissNewApiKey: () => void;
+  /** Keeps the shell in step after Settings renames the organization. */
+  setOrganizationName: (name: string) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (input: {
     name: string;
@@ -110,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       organization,
       newApiKey,
       dismissNewApiKey: () => setNewApiKey(null),
+      setOrganizationName: (name) => setOrganization((o) => (o ? { ...o, name } : o)),
       async login(email, password) {
         adopt(
           await api<SessionResponse>('/auth/login', {

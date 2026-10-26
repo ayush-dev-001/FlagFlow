@@ -23,6 +23,8 @@ export interface FlagRouteDeps {
   limiters: Limiters;
   flags: FlagService;
   jwtSecret: string;
+  /** Open SDK streams for an org (the flag page's "connected" indicator). */
+  connectedClients: (orgId: string) => Promise<number>;
 }
 
 type FlagSummaryRow = Omit<FlagWithTargets, 'targets'> & { _count?: { targets: number }; targets?: unknown };
@@ -62,7 +64,7 @@ const STATE_FILTER = {
   live: { enabled: true, targetAll: true },
 } satisfies Record<string, Prisma.FlagWhereInput>;
 
-export function flagRoutes({ prisma, redis, limiters, flags, jwtSecret }: FlagRouteDeps) {
+export function flagRoutes({ prisma, redis, limiters, flags, jwtSecret, connectedClients }: FlagRouteDeps) {
   const member = [requireAuth(jwtSecret, redis), limiters.api, requireRole('ADMIN', 'MEMBER')];
   const adminOnly = requireRole('ADMIN');
 
@@ -95,6 +97,11 @@ export function flagRoutes({ prisma, redis, limiters, flags, jwtSecret }: FlagRo
   flagsRouter.post('/', async (req, res) => {
     const flag = await flags.create(actorOf(req), createFlagBody.parse(req.body));
     res.status(201).json({ flag: toDetail(flag) });
+  });
+
+  // Before /:id, so the word isn't read as a flag id.
+  flagsRouter.get('/connections', async (req, res) => {
+    res.json({ connectedClients: await connectedClients(orgOf(req)) });
   });
 
   flagsRouter.get('/:id', async (req, res) => {

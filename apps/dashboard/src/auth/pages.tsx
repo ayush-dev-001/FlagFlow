@@ -2,17 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { type FormEvent, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { ApiError, api } from '../api/client';
+import { formText } from '../ui/form';
 import { Alert, Button, Field, Spinner } from '../ui/primitives';
 import { AuthLayout } from './AuthLayout';
 import { useAuth } from './AuthProvider';
 import type { MirrorStatus } from './illustration/LoginIllustration';
 import { useFormMirror } from './illustration/useFormMirror';
-
-/** A text field's value; FormData.get can also return a File. */
-const text = (data: FormData, name: string) => {
-  const value = data.get(name);
-  return typeof value === 'string' ? value : '';
-};
 
 const linkClass = 'font-semibold text-lime hover:underline';
 
@@ -51,7 +46,7 @@ export function LoginPage() {
     setSubmitting(true);
     form.clear();
     try {
-      await login(text(data, 'email'), text(data, 'password'));
+      await login(formText(data, 'email'), formText(data, 'password'));
       setDone(true);
       void navigate('/', { replace: true });
     } catch (err) {
@@ -114,10 +109,10 @@ export function RegisterPage() {
     form.clear();
     try {
       await register({
-        name: text(data, 'name'),
-        email: text(data, 'email'),
-        password: text(data, 'password'),
-        organizationName: text(data, 'organizationName'),
+        name: formText(data, 'name'),
+        email: formText(data, 'email'),
+        password: formText(data, 'password'),
+        organizationName: formText(data, 'organizationName'),
       });
       setDone(true);
       void navigate('/welcome', { replace: true });
@@ -200,7 +195,7 @@ export function InvitePage() {
     setSubmitting(true);
     form.clear();
     try {
-      await acceptInvite(token, { name: text(data, 'name'), password: text(data, 'password') });
+      await acceptInvite(token, { name: formText(data, 'name'), password: formText(data, 'password') });
       setDone(true);
       void navigate('/', { replace: true });
     } catch (err) {

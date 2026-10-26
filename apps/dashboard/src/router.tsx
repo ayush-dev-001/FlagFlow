@@ -5,16 +5,14 @@ import { InvitePage, LoginPage, RegisterPage } from './auth/pages';
 import { WelcomePage } from './auth/WelcomePage';
 import { LandingPage } from './landing/LandingPage';
 import { AppShell } from './shell/AppShell';
-import {
-  AdminPage,
-  AuditPage,
-  EndUsersPage,
-  ErrorPage,
-  FlagsPage,
-  NotFoundPage,
-  SettingsPage,
-  TeamPage,
-} from './shell/pages';
+import { AdminPage } from './admin/AdminPage';
+import { AuditPage } from './audit/AuditPage';
+import { EndUsersPage } from './endUsers/EndUsersPage';
+import { FlagDetailPage } from './flags/FlagDetailPage';
+import { FlagsPage } from './flags/FlagsPage';
+import { SettingsPage } from './settings/SettingsPage';
+import { ErrorPage, NotFoundPage } from './shell/pages';
+import { TeamPage } from './team/TeamPage';
 import { Spinner } from './ui/primitives';
 
 function Booting() {
@@ -87,6 +85,14 @@ export const router = createBrowserRouter([
                 element: (
                   <RequireRole roles={['ADMIN', 'MEMBER']}>
                     <FlagsPage />
+                  </RequireRole>
+                ),
+              },
+              {
+                path: '/flags/:id',
+                element: (
+                  <RequireRole roles={['ADMIN', 'MEMBER']}>
+                    <FlagDetailPage />
                   </RequireRole>
                 ),
               },

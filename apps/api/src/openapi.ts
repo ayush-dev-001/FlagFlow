@@ -30,6 +30,7 @@ import {
   targetsBody,
   updateFlagBody,
 } from './flags/schemas.js';
+import { organizationSummary, updateOrgStatusBody } from './admin/routes.js';
 import { apiKeySummary, createApiKeyBody, updateOrgBody } from './org/routes.js';
 import { evaluateQuery } from './public/routes.js';
 
@@ -199,6 +200,17 @@ const routes: Record<string, Record<string, RouteDoc>> = {
       responses: { 201: { description: 'Created', schema: flagResponse }, ...errors(400, 401, 403, 409) },
     },
   },
+  '/api/flags/connections': {
+    get: {
+      summary: 'Open SDK streams for the organization, across instances',
+      tag: 'Flags',
+      auth: 'bearer',
+      responses: {
+        200: { description: 'Count', schema: z.object({ connectedClients: z.number().int() }) },
+        ...errors(401, 403),
+      },
+    },
+  },
   '/api/flags/{id}': {
     get: {
       summary: 'A flag with its targets',
@@ -255,6 +267,33 @@ const routes: Record<string, Record<string, RouteDoc>> = {
       auth: 'bearer',
       query: auditQuery,
       responses: { 200: { description: 'Entries', schema: auditPage }, ...errors(400, 401, 403) },
+    },
+  },
+  '/api/admin/organizations': {
+    get: {
+      summary: 'Every organization on this instance (superadmin)',
+      tag: 'Superadmin',
+      auth: 'bearer',
+      responses: {
+        200: {
+          description: 'Organizations',
+          schema: z.object({ organizations: z.array(organizationSummary) }),
+        },
+        ...errors(401, 403),
+      },
+    },
+  },
+  '/api/admin/organizations/{id}': {
+    patch: {
+      summary:
+        'Activate or deactivate an organization; deactivating ends its sessions and streams (superadmin)',
+      tag: 'Superadmin',
+      auth: 'bearer',
+      body: updateOrgStatusBody,
+      responses: {
+        200: { description: 'Updated', schema: z.object({ organization: organizationSummary }) },
+        ...errors(400, 401, 403, 404),
+      },
     },
   },
   '/api/org': {

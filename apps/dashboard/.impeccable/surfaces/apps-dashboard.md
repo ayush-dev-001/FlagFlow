@@ -5,9 +5,9 @@ primary_target: "apps/dashboard"
 related_targets: []
 ---
 
-# Dashboard foundation (phase 6)
+# Dashboard (phases 6 and 7)
 
-Scope: apps/dashboard (the design system, the app shell, the auth pages: login, register with the one-time API key reveal, accept invite) plus the public home page that defines the world. Visitor mode: Operate for the app and auth, Persuade for the home page.
+Scope: apps/dashboard (the design system, the app shell, the auth pages: login, register with the one-time API key reveal, accept invite; and from phase 7 the working screens: flags board, flag detail, end-user lookup, team, audit log, settings, superadmin organizations) plus the public home page that defines the world. Visitor mode: Operate for the app and auth, Persuade for the home page.
 
 Audience and job: engineers and PMs signing in to change flags during a rollout or incident, and admins onboarding teammates. Success: going from the home page's "Get started" to a working session feels like one site, everything in the shell is where they expect it, and the one-time API key is never lost.
 
@@ -28,6 +28,9 @@ STORY: a visitor sees what FlagFlow does on the home page, clicks "Get started",
 FIRST VIEWPORT:
 - Auth pages have no site header (owner decision, 2026-10-25): two sections on screens from 1024px. On the left, the wordmark (a link home) sits top-left; a 400px column, centred vertically, holds a bold Title Case headline with a white/55 subline and then the form directly on ink: fields at a 16px gap, a full-width lime submit and a left-aligned 13px note. One lime glow (25%, 120px blur) bleeds from the lower-left corner. On the right, a 28px-radius #151817 panel inset 12px holds two faint concentric arcs, two lime sparkles, a lime pool (30%, 110px blur) under the desk, and the owner-supplied desk illustration (Login.svg, recoloured to ink, greys, white and lime by scripts/build-login-art.mjs). Its monitor mirrors the form: line 1 fills with the length of all text fields together, line 2 with the password length (lengths only, never values), a caret blinks on the focused line, the button pulses while submitting, and a failed submit turns the whole screen flame #ff5a24 and shakes it, the lines and button staying ink. Below 1024px the panel is dropped and the form stands alone.
 - The app shell: a 248px ink sidebar (lime-square wordmark, Workspace and Admin groups, org/user block with Log out). The active item is lime-tinted with a lime icon. The page header is a bold tight Title Case title.
+- Flags board (phase 7): header with a lime "New flag" action; a toolbar with search, an All/Inactive/Testing/Live segmented filter and a "connected apps" chip (lime and pulsing when an SDK stream is open); three columns headed by their state pill and a plain meaning ("Off for everyone", "On for listed users only", "On for all users"). Cards are #151817 panels: the key in Geist Mono, a switch (lime when on), a two-line description, the audience and last change. Toggling moves the card to its new column with a shared-layout move.
+- Flag detail: the key as a mono title with its state pill and the connected chip; an On/Off panel with a large switch and one sentence of who gets it; Audience (listed users or all users, ID chips with remove, paste-several add); History in plain sentences (admins); Description, Details and an admin-only flame Delete panel on the right.
+- Other screens reuse the same parts: Panels with a 17px title row, list rows on white/5 hairlines, ghost row actions, confirm dialogs on the native <dialog> naming the action, toasts confirming every change, empty states that say what to do next, and error states with a retry.
 
 FORM: home-page world, pinned by the owner (PLAN.md §3), first on the list. The earlier roll's assignment is not followed because an owner-pinned direction beats the roll (new-work §3). seed:213ea1b59b88bf0c. Signature move: "lime is on". Every on-state in the product (a live flag, a selected nav item, a toggle, a focused field, the billing pill) is the same lime, and it animates in with the home page's expo ease.
 
