@@ -53,6 +53,15 @@ describe('loadEnv', () => {
     expect(loadEnv({ ...valid, RENDER_EXTERNAL_URL: render }).DASHBOARD_ORIGIN).toBe(valid.DASHBOARD_ORIGIN);
   });
 
+  it('needs SMTP_URL or RESEND_API_KEY for invite email', () => {
+    const { SMTP_URL: _omit, ...rest } = valid;
+    expect(() => loadEnv(rest)).toThrow(/SMTP_URL/);
+    expect(loadEnv({ ...rest, RESEND_API_KEY: 're_abcdefgh12345678' }).RESEND_API_KEY).toBe(
+      're_abcdefgh12345678',
+    );
+    expect(() => loadEnv({ ...rest, RESEND_API_KEY: 'not-a-key' })).toThrow(/RESEND_API_KEY/);
+  });
+
   it('rejects an unknown NODE_ENV', () => {
     expect(() => loadEnv({ ...valid, NODE_ENV: 'staging' })).toThrow(/NODE_ENV/);
   });

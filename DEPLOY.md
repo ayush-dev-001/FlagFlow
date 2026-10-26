@@ -19,7 +19,7 @@ That is fine for a demo. Use paid plans for anything real.
 ## 1. Email (Resend)
 
 1. Create a Resend account and an API key with sending access.
-2. Your SMTP URL is `smtps://resend:<API_KEY>@smtp.resend.com:465`.
+2. Keep the key: FlagFlow sends invites through Resend's HTTPS API with it. Render's free plan blocks outbound SMTP (ports 25, 465 and 587, and 2465 was unreachable too), so SMTP isn't used there.
 
 Without a verified domain, Resend only delivers mail from `onboarding@resend.dev` to your own account address. That's enough to try invites on yourself. To invite anyone else, verify a domain in Resend, then change `MAIL_FROM` to an address on it.
 
@@ -30,7 +30,7 @@ Without a verified domain, Resend only delivers mail from `onboarding@resend.dev
 
    | Service             | Key                | Value                                                              |
    | ------------------- | ------------------ | ------------------------------------------------------------------ |
-   | `flagflow`          | `SMTP_URL`         | The Resend SMTP URL from step 1                                    |
+   | `flagflow`          | `RESEND_API_KEY`   | The Resend API key from step 1 (`re_…`)                            |
    | `flagflow`          | `SUPERADMIN_EMAIL` | Your email (the platform superadmin login)                         |
    | `flagflow-demo-api` | `FLAGFLOW_URL`     | The `flagflow` service's URL, e.g. `https://flagflow.onrender.com` |
    | `flagflow-demo-api` | `FLAGFLOW_API_KEY` | Leave empty for now (step 4)                                       |

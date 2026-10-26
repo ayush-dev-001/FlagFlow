@@ -2,7 +2,7 @@
 # the same origin, so the refresh cookie stays first-party (owner decision, 2026-10-26). demo-api calls
 # its public URL. demo-web is deployed on Vercel (apps/demo-web/vercel.json).
 #
-# Set in the dashboard after the first sync (sync: false): SMTP_URL, SUPERADMIN_EMAIL, and on the demo
+# Set in the dashboard after the first sync (sync: false): RESEND_API_KEY, SUPERADMIN_EMAIL, and on the demo
 # backend FLAGFLOW_URL, FLAGFLOW_API_KEY and DEMO_WEB_ORIGIN. See DEPLOY.md.
 
 services:
@@ -47,8 +47,9 @@ services:
       # Render's load balancer is the one proxy hop in front of the app.
       - key: TRUST_PROXY
         value: '1'
-      # e.g. smtps://resend:<RESEND_API_KEY>@smtp.resend.com:465
-      - key: SMTP_URL
+      # Invite email through Resend's HTTPS API. Render's free plan blocks outbound SMTP ports, so use this
+      # rather than SMTP_URL there. (SMTP_URL still works on hosts that allow SMTP.)
+      - key: RESEND_API_KEY
         sync: false
       # Without a verified domain, Resend only sends from onboarding@resend.dev to your own address.
       - key: MAIL_FROM
