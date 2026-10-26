@@ -19,7 +19,8 @@ describe('smtpOptions', () => {
   });
 });
 
-const KEY = 're_test_0123456789abcdef';
+// Built at runtime so secret scanners don't mistake a test value for a real key.
+const KEY = `re_${'x'.repeat(20)}`;
 const invite: InviteEmail = {
   to: 'mia@example.test',
   organizationName: 'Acme\r\nBcc: evil@example.test',

@@ -56,9 +56,9 @@ describe('loadEnv', () => {
   it('needs SMTP_URL or RESEND_API_KEY for invite email', () => {
     const { SMTP_URL: _omit, ...rest } = valid;
     expect(() => loadEnv(rest)).toThrow(/SMTP_URL/);
-    expect(loadEnv({ ...rest, RESEND_API_KEY: 're_abcdefgh12345678' }).RESEND_API_KEY).toBe(
-      're_abcdefgh12345678',
-    );
+    // Built at runtime so secret scanners don't mistake a test value for a real key.
+    const fakeKey = `re_${'x'.repeat(16)}`;
+    expect(loadEnv({ ...rest, RESEND_API_KEY: fakeKey }).RESEND_API_KEY).toBe(fakeKey);
     expect(() => loadEnv({ ...rest, RESEND_API_KEY: 'not-a-key' })).toThrow(/RESEND_API_KEY/);
   });
 

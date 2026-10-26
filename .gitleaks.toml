@@ -18,3 +18,6 @@ paths = [
   '''(^|/)postman/collections/FlagFlow API/''',
   '''(^|/)\.env$''',
 ]
+# This commit's only findings are two fake Resend keys in tests (re_ followed by placeholder characters).
+# The next commit builds them at runtime instead; the commit itself can't be rewritten after the fact.
+commits = ['cb96adfe6353e8fdd267cdf9b629b78f3c80f723']
