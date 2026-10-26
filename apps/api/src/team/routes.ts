@@ -8,7 +8,7 @@ import type { PrismaClient } from '../db.js';
 import { AppError } from '../errors.js';
 import type { Invite, User } from '../generated/prisma/client.js';
 import { notFound, orgOf, parseId } from '../http.js';
-import type { Mailer } from '../mailer.js';
+import { type Mailer, MailRefusedError } from '../mailer.js';
 import type { Limiters } from '../rateLimit.js';
 import type { Redis } from '../redis.js';
 import { createInviteBody, updateMemberBody } from './schemas.js';
@@ -160,6 +160,15 @@ export function teamRouter({
       // Nobody can use an invite whose email never left: cancel it, so it doesn't sit there pending.
       req.log.error({ err, inviteId: invite.id }, 'invite email could not be sent');
       await prisma.invite.update({ where: { id: invite.id }, data: { status: 'REVOKED' } });
+      // Say plainly when it's the recipient the service won't accept. The service's own message names its
+      // account owner's address, so it stays in the server log rather than going to the org admin.
+      if (err instanceof MailRefusedError && err.reason === 'recipient-not-allowed') {
+        throw new AppError(
+          502,
+          'EMAIL_RECIPIENT_NOT_ALLOWED',
+          "The email service can only send to its own account's address until a sending domain is verified, so the invite was cancelled. Invite that address, or verify a domain with the email provider.",
+        );
+      }
       throw new AppError(
         502,
         'EMAIL_NOT_SENT',

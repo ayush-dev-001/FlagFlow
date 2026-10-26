@@ -53,13 +53,16 @@ describe('loadEnv', () => {
     expect(loadEnv({ ...valid, RENDER_EXTERNAL_URL: render }).DASHBOARD_ORIGIN).toBe(valid.DASHBOARD_ORIGIN);
   });
 
-  it('needs SMTP_URL or RESEND_API_KEY for invite email', () => {
+  it('needs SMTP_URL, RESEND_API_KEY or BREVO_API_KEY for invite email', () => {
     const { SMTP_URL: _omit, ...rest } = valid;
     expect(() => loadEnv(rest)).toThrow(/SMTP_URL/);
     // Built at runtime so secret scanners don't mistake a test value for a real key.
     const fakeKey = `re_${'x'.repeat(16)}`;
     expect(loadEnv({ ...rest, RESEND_API_KEY: fakeKey }).RESEND_API_KEY).toBe(fakeKey);
     expect(() => loadEnv({ ...rest, RESEND_API_KEY: 'not-a-key' })).toThrow(/RESEND_API_KEY/);
+    const brevoKey = `xkeysib-${'x'.repeat(24)}`;
+    expect(loadEnv({ ...rest, BREVO_API_KEY: brevoKey }).BREVO_API_KEY).toBe(brevoKey);
+    expect(() => loadEnv({ ...rest, BREVO_API_KEY: 'not-a-key' })).toThrow(/BREVO_API_KEY/);
   });
 
   it('rejects an unknown NODE_ENV', () => {
