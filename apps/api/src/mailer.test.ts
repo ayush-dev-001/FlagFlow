@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createMailer, type InviteEmail, smtpOptions } from './mailer.js';
+import { createMailer, type InviteEmail, MailRefusedError, smtpOptions } from './mailer.js';
 
 describe('smtpOptions', () => {
   it('reads host, port, TLS and credentials from the URL, with short timeouts', () => {
@@ -71,6 +71,18 @@ describe('Resend HTTPS mailer', () => {
     expect(err.message).toContain('403');
     expect(err.message).toContain('your own email address');
     expect(err.message).not.toContain(KEY);
+    expect(err).toBeInstanceOf(MailRefusedError);
+    expect((err as MailRefusedError).reason).toBe('recipient-not-allowed');
+  });
+
+  it('tells other refusals apart from a recipient the account may not send to', async () => {
+    const f = fakeFetch(422, { message: 'Invalid from field' });
+    const err = await createMailer(env, f.impl)
+      .sendInvite(invite)
+      .then(() => null)
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(MailRefusedError);
+    expect((err as MailRefusedError).reason).toBe('other');
   });
 
   it('needs SMTP_URL or RESEND_API_KEY', () => {

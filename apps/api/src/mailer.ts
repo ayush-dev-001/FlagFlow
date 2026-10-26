@@ -10,6 +10,17 @@ export interface InviteEmail {
   expiresAt: Date;
 }
 
+/** The mail service answered but would not deliver. `reason` says whether it was the recipient. */
+export class MailRefusedError extends Error {
+  override name = 'MailRefusedError';
+  constructor(
+    message: string,
+    readonly reason: 'recipient-not-allowed' | 'other',
+  ) {
+    super(message);
+  }
+}
+
 export interface Mailer {
   sendInvite(email: InviteEmail): Promise<void>;
 }
@@ -68,7 +79,13 @@ function resendMailer(apiKey: string, from: string, fetchImpl: typeof fetch): Ma
       });
       if (!res.ok) {
         const detail = ((await res.json().catch(() => null)) as { message?: string } | null)?.message ?? '';
-        throw new Error(`Resend refused the email (${res.status})${detail ? `: ${detail}` : ''}`);
+        throw new MailRefusedError(
+          `Resend refused the email (${res.status})${detail ? `: ${detail}` : ''}`,
+          // Without a verified domain, Resend only delivers to the account owner's own address.
+          res.status === 403 && /testing emails|verify a domain/i.test(detail)
+            ? 'recipient-not-allowed'
+            : 'other',
+        );
       }
     },
   };

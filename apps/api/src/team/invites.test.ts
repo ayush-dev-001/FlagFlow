@@ -3,7 +3,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../app.js';
 import type { PrismaClient } from '../db.js';
-import { createMailer } from '../mailer.js';
+import { createMailer, MailRefusedError } from '../mailer.js';
 import type { Redis } from '../redis.js';
 import { register } from '../test/auth.js';
 import {
@@ -208,6 +208,35 @@ describe('when the invite email cannot be sent', { timeout: 30_000 }, () => {
     expect(JSON.stringify(res.body)).not.toContain('ETIMEDOUT');
     const stored = await prisma.invite.findMany({ where: { orgId: admin.orgId } });
     expect(stored.map((i) => i.status)).toEqual(['REVOKED']);
+  });
+
+  it('says plainly when the service only sends to its own account, without naming that account', async () => {
+    const owner = 'owner-of-the-mail-account@example.test';
+    const refusing = createApp(
+      testDeps(
+        prisma,
+        redis,
+        {},
+        {
+          sendInvite: () =>
+            Promise.reject(
+              new MailRefusedError(
+                `Resend refused the email (403): You can only send testing emails to your own email address (${owner})`,
+                'recipient-not-allowed',
+              ),
+            ),
+        },
+      ),
+    );
+    const admin = await register(refusing);
+    const res = await request(refusing)
+      .post('/api/team/invites')
+      .set(bearer(admin.accessToken))
+      .send({ email: 'someone@example.test' });
+    expect(res.status).toBe(502);
+    expect(res.body.error.code).toBe('EMAIL_RECIPIENT_NOT_ALLOWED');
+    expect(JSON.stringify(res.body)).not.toContain(owner);
+    expect((await prisma.invite.findFirstOrThrow({ where: { orgId: admin.orgId } })).status).toBe('REVOKED');
   });
 
   it('times out on an unreachable SMTP server in seconds, not minutes', async () => {
