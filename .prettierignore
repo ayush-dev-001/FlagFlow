@@ -20,3 +20,10 @@ postman/collections
 postman/environments
 postman/skills
 .postman
+
+# Generated video assets (screenshots, voice timings, renders)
+video/public/
+video/out/
+
+# A separate video project another session works on in this folder; it isn't part of this repo's workspaces
+video/

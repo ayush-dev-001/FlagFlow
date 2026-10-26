@@ -21,7 +21,13 @@ That is fine for a demo. Use paid plans for anything real.
 1. Create a Resend account and an API key with sending access.
 2. Keep the key: FlagFlow sends invites through Resend's HTTPS API with it. Render's free plan blocks outbound SMTP (ports 25, 465 and 587, and 2465 was unreachable too), so SMTP isn't used there.
 
-Without a verified domain, Resend only delivers mail from `onboarding@resend.dev` to your own account address. That's enough to try invites on yourself. To invite anyone else, verify a domain in Resend, then change `MAIL_FROM` to an address on it.
+3. Verify your domain so invites can reach anyone:
+   1. In Resend, go to **Domains → Add Domain** and enter your domain, e.g. `your-domain.com`. A subdomain like `mail.your-domain.com` keeps it separate from any other email on the domain.
+   2. Add the DNS records Resend shows at your domain's DNS provider: the MX and TXT (SPF) records, plus the DKIM record.
+   3. Click **Verify**. DNS usually updates within minutes, but it can take a few hours.
+4. Set `MAIL_FROM` on Render to an address on that domain, e.g. `FlagFlow <invites@your-domain.com>`. The mailbox doesn't need to exist.
+
+Until the domain is verified, Resend only delivers mail from `onboarding@resend.dev` to your own account address. The dashboard then says so when an invite is refused.
 
 ## 2. Render (API, dashboard, demo backend, Postgres, Redis)
 
@@ -31,6 +37,7 @@ Without a verified domain, Resend only delivers mail from `onboarding@resend.dev
    | Service             | Key                | Value                                                              |
    | ------------------- | ------------------ | ------------------------------------------------------------------ |
    | `flagflow`          | `RESEND_API_KEY`   | The Resend API key from step 1 (`re_…`)                            |
+   | `flagflow`          | `MAIL_FROM`        | `FlagFlow <invites@your-domain.com>` (step 1.4)                    |
    | `flagflow`          | `SUPERADMIN_EMAIL` | Your email (the platform superadmin login)                         |
    | `flagflow-demo-api` | `FLAGFLOW_URL`     | The `flagflow` service's URL, e.g. `https://flagflow.onrender.com` |
    | `flagflow-demo-api` | `FLAGFLOW_API_KEY` | Leave empty for now (step 4)                                       |
