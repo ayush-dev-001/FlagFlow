@@ -121,68 +121,10 @@
   filter: blur(120px);
 }
 
-/* Landing page: the endless strip under "Built on". Two copies of the list slide by half their width. */
-.marquee-track {
-  display: flex;
-  width: max-content;
-}
-
+/* Landing page: in-page links glide to their section. */
 @media (prefers-reduced-motion: no-preference) {
-  .marquee-track {
-    animation: marquee 32s linear infinite;
-  }
-}
-
-.marquee-reverse {
-  animation-direction: reverse;
-}
-
-@keyframes marquee {
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-/* Landing page: feature cards. On hover a white sheet rises from the bottom while the card lifts and
-   tilts clockwise. Reduced motion keeps the colour change as a fade, without movement. */
-.feature-card {
-  transition:
-    transform 0.55s var(--ease-out-expo),
-    box-shadow 0.55s var(--ease-out-expo);
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: #fff;
-  transform: translate3d(0, 101%, 0);
-  transition: transform 0.55s var(--ease-out-expo);
-}
-
-@media (hover: hover) {
-  .feature-card:hover {
-    z-index: 1;
-    transform: translate3d(0, -10px, 0) rotate(4deg);
-    box-shadow: 0 0 70px rgb(255 255 255 / 0.22);
-  }
-  .feature-card:hover::before {
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .feature-card:hover {
-    transform: none;
-  }
-  .feature-card::before {
-    transform: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  .feature-card:hover::before {
-    opacity: 1;
+  :root:has(.landing) {
+    scroll-behavior: smooth;
   }
 }
 

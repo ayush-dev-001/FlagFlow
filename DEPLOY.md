@@ -51,7 +51,7 @@ Without a verified domain, Resend only delivers mail from `onboarding@resend.dev
    | `VITE_DEMO_API_URL`  | The `flagflow-demo-api` URL, e.g. `https://flagflow-demo-api.onrender.com` |
    | `VITE_DASHBOARD_URL` | The `flagflow` URL                                                         |
 
-4. Copy the deployment's URL into `DEMO_WEB_ORIGIN` on `flagflow-demo-api` in Render.
+4. Copy the deployment's URL into `DEMO_WEB_ORIGIN` on `flagflow-demo-api` in Render, and into `VITE_DEMO_URL` on `flagflow` (the home page's Demo links), then redeploy `flagflow` so the dashboard is rebuilt with it.
 
 ## 4. Connect the demo
 

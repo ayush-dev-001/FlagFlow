@@ -2,7 +2,7 @@
 // refresh token is an httpOnly cookie the browser sends to /api/auth only. A 401 triggers one silent
 // refresh and a single retry; concurrent requests share that one refresh.
 
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000/api';
+export const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:4000/api';
 
 export class ApiError extends Error {
   constructor(

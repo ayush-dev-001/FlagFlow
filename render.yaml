@@ -56,6 +56,9 @@ services:
         value: FlagFlow <onboarding@resend.dev>
       - key: SUPERADMIN_EMAIL
         sync: false
+      # Read at build time: the home page's "Demo" links. Unset, they point to the in-page preview.
+      - key: VITE_DEMO_URL
+        sync: false
       - key: SUPERADMIN_PASSWORD
         generateValue: true
       - key: DEMO_ADMIN_EMAIL

@@ -1,14 +1,20 @@
+import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import { transition } from '../ui/motion';
 
-// The public site's header and atmosphere, shared by the home page and the auth pages so that
-// "Get started" leads to a form in the same world.
+// The public site's header, plus pieces the home page and the auth pages share.
 
-const NAV = [
-  { label: 'Product', href: '/#product' },
-  { label: 'How it works', href: '/#how' },
-  { label: 'Demo', href: '/#demo' },
-  { label: 'Docs', href: '/#docs' },
-];
+/** The demo customer app (apps/demo-web). Unset, links fall back to the home page's in-page preview. */
+export const DEMO_URL = (import.meta.env.VITE_DEMO_URL as string | undefined) || null;
+
+export const NAV = [
+  { label: 'Product', id: 'product' },
+  { label: 'How it works', id: 'how' },
+  { label: 'Use cases', id: 'use-cases' },
+  { label: 'Docs', id: 'docs' },
+] as const;
 
 /** A soft lime cross of light. */
 export function Sparkle({ className }: { className: string }) {
@@ -20,63 +26,197 @@ export function Sparkle({ className }: { className: string }) {
   );
 }
 
-/** The floating glass bar at the top of every public page. */
-export function SiteHeader() {
+function NewTabIcon({ className }: { className: string }) {
   return (
-    <header className="relative z-20 px-4 pt-3">
-      <nav
-        aria-label="Site"
-        className="mx-auto flex h-16 max-w-[900px] items-center gap-8 rounded-2xl border border-white/5 bg-white/[0.035] px-4 backdrop-blur-md"
-      >
-        <Link to="/" className="flex items-center gap-2 text-[20px] font-bold tracking-tight text-white">
-          <span className="size-3.5 rounded-[3px] bg-lime" aria-hidden="true" />
-          FlagFlow
-        </Link>
-        <ul className="hidden items-center gap-6 md:flex">
-          {NAV.map((item) => (
-            <li key={item.label}>
-              <a href={item.href} className="text-[14px] text-white/60 transition-colors hover:text-white">
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <div className="ml-auto flex items-center gap-4">
-          <Link
-            to="/login"
-            className="hidden text-[14px] text-white/70 transition-colors hover:text-white sm:block"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/register"
-            className="rounded-[9px] bg-white px-5 py-2.5 text-[14px] font-semibold text-ink transition-colors hover:bg-lime"
-          >
-            Get started
-          </Link>
-        </div>
-      </nav>
-    </header>
+    <>
+      <ArrowUpRight className={className} aria-hidden="true" />
+      <span className="sr-only">(opens in a new tab)</span>
+    </>
   );
 }
 
-/** Side rails, faint arcs, sparkles and lime glows in the lower corners: the home page hero's backdrop. */
-export function SiteAtmosphere() {
+export function Wordmark() {
   return (
-    <>
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-y-0 left-[17%] w-px bg-white/[0.05]" />
-        <div className="absolute inset-y-0 right-[17%] w-px bg-white/[0.05]" />
-        <div className="absolute top-[30%] left-1/2 aspect-square w-[1035px] -translate-x-1/2 rounded-full border border-white/[0.06]" />
-        <div className="absolute top-[40%] left-1/2 aspect-square w-[810px] -translate-x-1/2 rounded-full border border-white/[0.04]" />
-        <div className="absolute -bottom-56 -left-40 size-[504px] rounded-full bg-lime/45 blur-[117px]" />
-        <div className="absolute -right-48 -bottom-64 size-[378px] rounded-full bg-lime/25 blur-[126px]" />
+    <Link to="/" className="flex items-center gap-2 text-[19px] font-bold tracking-tight text-white">
+      <span className="relative size-4 rounded-[4px] bg-lime" aria-hidden="true">
+        <span className="absolute inset-[4px] rounded-[1.5px] bg-ink" />
+      </span>
+      FlagFlow
+    </Link>
+  );
+}
+
+/** The id of the section currently under the header, for the nav's active state. */
+function useActiveSection(ids: readonly string[]) {
+  const [active, setActive] = useState<string | null>(null);
+  useEffect(() => {
+    const seen = new Map<string, boolean>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) seen.set(entry.target.id, entry.isIntersecting);
+        setActive(ids.find((id) => seen.get(id)) ?? null);
+      },
+      // A band across the upper middle of the screen: a section counts once it fills that band.
+      { rootMargin: '-35% 0px -60% 0px' },
+    );
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    }
+    return () => observer.disconnect();
+  }, [ids]);
+  return active;
+}
+
+/** Fixed glass bar over every public page. Solidifies once the page scrolls under it. */
+export function SiteHeader() {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const active = useActiveSection(NAV.map((n) => n.id));
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const onResize = () => window.innerWidth >= 768 && setOpen(false);
+    window.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [open]);
+
+  const demoLink = DEMO_URL ? { href: DEMO_URL, target: '_blank', rel: 'noreferrer' } : { href: '/#demo' };
+  const close = () => setOpen(false);
+
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-4">
+      <div
+        className={`mx-auto max-w-[1080px] rounded-2xl border transition-[background-color,border-color,box-shadow] duration-300 ${
+          scrolled || open
+            ? 'border-white/10 bg-[#101312]/85 shadow-[0_12px_40px_rgb(0_0_0/0.35)] backdrop-blur-xl'
+            : 'border-white/5 bg-white/[0.03] backdrop-blur-md'
+        }`}
+      >
+        <nav aria-label="Site" className="flex h-14 items-center gap-6 px-3 sm:px-4">
+          <Wordmark />
+          <ul className="hidden items-center gap-1 md:flex">
+            {NAV.map((item) => (
+              <li key={item.id}>
+                <a
+                  href={`/#${item.id}`}
+                  aria-current={active === item.id ? 'true' : undefined}
+                  className={`relative rounded-lg px-3 py-1.5 text-[14px] transition-colors ${
+                    active === item.id ? 'text-white' : 'text-white/60 hover:text-white'
+                  }`}
+                >
+                  {active === item.id && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-0 rounded-lg bg-white/[0.07]"
+                      transition={transition.base}
+                    />
+                  )}
+                  <span className="relative">{item.label}</span>
+                </a>
+              </li>
+            ))}
+            <li>
+              <a
+                {...demoLink}
+                className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[14px] text-white/60 transition-colors hover:text-white"
+              >
+                Demo
+                {DEMO_URL && <NewTabIcon className="size-3.5" />}
+              </a>
+            </li>
+          </ul>
+
+          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <Link
+              to="/login"
+              className="hidden rounded-lg px-3 py-1.5 text-[14px] text-white/70 transition-colors hover:text-white sm:block"
+            >
+              Sign in
+            </Link>
+            <Link
+              to="/register"
+              className="rounded-[9px] bg-lime px-4 py-2 text-[14px] font-semibold text-ink transition-[filter] hover:brightness-110"
+            >
+              Get started
+            </Link>
+            <button
+              type="button"
+              aria-expanded={open}
+              aria-controls="site-menu"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              onClick={() => setOpen((v) => !v)}
+              className="grid size-9 place-items-center rounded-lg text-white/80 transition-colors hover:bg-white/[0.07] hover:text-white md:hidden"
+            >
+              {open ? (
+                <X className="size-5" aria-hidden="true" />
+              ) : (
+                <Menu className="size-5" aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        </nav>
+
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.div
+              id="site-menu"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={transition.base}
+              className="overflow-hidden md:hidden"
+            >
+              <ul className="space-y-1 border-t border-white/[0.07] px-3 pt-3 pb-4">
+                {NAV.map((item) => (
+                  <li key={item.id}>
+                    <a
+                      href={`/#${item.id}`}
+                      onClick={close}
+                      className={`block rounded-lg px-3 py-2.5 text-[15px] transition-colors hover:bg-white/[0.06] ${
+                        active === item.id ? 'bg-white/[0.06] text-white' : 'text-white/75'
+                      }`}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+                <li>
+                  <a
+                    {...demoLink}
+                    onClick={close}
+                    className="flex items-center gap-1 rounded-lg px-3 py-2.5 text-[15px] text-white/75 transition-colors hover:bg-white/[0.06]"
+                  >
+                    Demo
+                    {DEMO_URL && <NewTabIcon className="size-4" />}
+                  </a>
+                </li>
+                <li className="sm:hidden">
+                  <Link
+                    to="/login"
+                    onClick={close}
+                    className="block rounded-lg px-3 py-2.5 text-[15px] text-white/75 transition-colors hover:bg-white/[0.06]"
+                  >
+                    Sign in
+                  </Link>
+                </li>
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      {/* Sparkles only where there is room beside the headline; on a phone they would cross it. */}
-      <div className="hidden md:block">
-        <Sparkle className="top-[16%] left-[8%] size-20" />
-        <Sparkle className="top-[34%] right-[14%] size-28" />
-      </div>
-    </>
+    </header>
   );
 }

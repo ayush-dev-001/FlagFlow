@@ -44,7 +44,7 @@ Live, with no redeploy. Flag changes reach running apps over a server-sent event
   - Inter Tight, with bold Title Case headlines. Lime glows.
   - The signed-in dashboard is dark ink + lime. Flag states: Live = lime, Testing = iris `#6b5cf6`, Inactive = grey. Flame `#ff5a24` is danger.
   - Auth pages share the home page's header and atmosphere.
-  - Owner decision, 2026-10-25 ("Keep them as designed"): the home page keeps its small labels above headings ("About FlagFlow", "Built on", "Our plans") and the "Numbers Behind FlagFlow" stat block. These are home-page patterns only; app screens don't use them.
+  - Owner decision, 2026-10-26: the home page was redesigned as original work (it had followed a third-party template too closely). It has no pricing section while billing is out of scope, and its nav and footer link only to real sections, the API reference and the demo app.
   - Motion explains state changes, stays short, and respects `prefers-reduced-motion`.
 
 ## Evidence on Hand

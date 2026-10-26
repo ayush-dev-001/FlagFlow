@@ -1,50 +1,39 @@
 import {
   ArrowRight,
-  Asterisk,
-  Box,
-  CircleCheck,
-  Code2,
-  Component,
-  Diamond,
-  Database,
+  ArrowUp,
+  ArrowUpRight,
+  Check,
+  Copy,
+  FileJson,
   History,
   LifeBuoy,
-  Layers,
-  Play,
+  MessageCircle,
+  Plus,
   Power,
-  Radio,
   Rocket,
-  Scan,
-  Server,
+  Search,
   ShieldCheck,
   Siren,
   UsersRound,
   Zap,
 } from 'lucide-react';
-import {
-  AnimatePresence,
-  type MotionStyle,
-  type MotionValue,
-  motion,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-} from 'motion/react';
-import { type CSSProperties, type ReactNode, type RefObject, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { type KeyboardEvent, type ReactNode, useEffect, useId, useState } from 'react';
 import { Link } from 'react-router';
-import { SiteHeader as Header, Sparkle } from '../site/SiteChrome';
-import { EASE_OUT } from '../ui/motion';
+import { API_URL } from '../api/client';
+import { DEMO_URL, NAV, SiteHeader, Sparkle, Wordmark } from '../site/SiteChrome';
+import { EASE_OUT, transition } from '../ui/motion';
 import onCall from './images/on-call.webp';
 import pairAtDesk from './images/pair-at-desk.webp';
 import teamAtMonitor from './images/team-at-monitor.webp';
 import teamTable from './images/team-table.webp';
 
-// The public home page. It carries its own lime-on-black palette (scoped to .landing in index.css)
-// and covers the dashboard's global backdrop with an opaque ground. The dark hero ends below the card
-// row, and the page continues on white.
+// The public home page. It carries its own lime-on-ink palette and covers the dashboard's global
+// backdrop with an opaque ground. Section ids are the header's and footer's link targets.
 
-/** Staggered entrance; MotionConfig in main.tsx drops the transform under reduced motion. */
+const DOCS_URL = `${API_URL}/docs`;
+
+/** Fades content up as it scrolls into view, once. MotionConfig in main.tsx drops the movement under reduced motion. */
 function Reveal({
   delay = 0,
   className,
@@ -57,8 +46,9 @@ function Reveal({
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 14 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '0px 0px -10% 0px' }}
       transition={{ duration: 0.7, ease: EASE_OUT, delay }}
     >
       {children}
@@ -66,950 +56,1042 @@ function Reveal({
   );
 }
 
-/** Photos are shown in greyscale so they sit in the lime-and-black palette. */
-function Photo({
-  src,
-  alt,
-  eager = false,
-  className = '',
-}: {
-  src: string;
-  alt: string;
-  /** For photos in the first screen, which should not wait for lazy loading. */
-  eager?: boolean;
-  className?: string;
-}) {
+/** Photos are shown in greyscale so they sit in the lime-and-ink palette. */
+function Photo({ src, alt, className = '' }: { src: string; alt: string; className?: string }) {
   return (
     <img
       src={src}
       alt={alt}
-      loading={eager ? 'eager' : 'lazy'}
+      loading="lazy"
       decoding="async"
       className={`object-cover grayscale ${className}`}
     />
   );
 }
 
-function Hero() {
+/** A small mono label above a section heading. */
+function Eyebrow({ children, dark = true }: { children: ReactNode; dark?: boolean }) {
   return (
-    <section className="relative z-10 shrink-0 px-4 pt-24 text-center lg:pt-[6.3vh]">
-      <Reveal>
-        <a
-          href="#how"
-          className="inline-flex items-center gap-2.5 rounded-full border border-white/5 bg-white/[0.05] py-1.5 pr-4 pl-1.5 text-[14px] font-semibold text-white transition-colors hover:bg-white/[0.08]"
-        >
-          <span className="rounded-full bg-white px-2.5 py-0.5 text-[13px] text-ink">New</span>
-          Live updates in under a second
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </a>
-      </Reveal>
-
-      <Reveal delay={0.08}>
-        <h1 className="mx-auto mt-10 max-w-[882px] text-[clamp(2.25rem,min(5.76vw,8.1vh),4.725rem)] lg:mt-[3.6vh] leading-[1.02] font-bold tracking-[-0.055em] text-white">
-          Ship Features
-          <br />
-          Without Redeploying
-        </h1>
-      </Reveal>
-
-      <Reveal delay={0.16}>
-        <p className="mx-auto mt-7 max-w-[468px] text-lg lg:mt-[2.25vh] text-white/55">
-          Turn a feature on for the users you pick, widen it to everyone, or switch it off when something
-          breaks.
-        </p>
-      </Reveal>
-
-      <Reveal delay={0.24} className="mt-10 flex flex-wrap items-center justify-center gap-4 lg:mt-[3.6vh]">
-        <Link
-          to="/register"
-          className="inline-flex h-[49px] items-center gap-2 rounded-[9px] bg-lime px-5 text-lg font-semibold text-ink transition-[filter,transform] hover:brightness-110 active:translate-y-px"
-        >
-          Get started
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
-        <a
-          href="#demo"
-          className="inline-flex h-[49px] items-center gap-2.5 rounded-[9px] bg-white/[0.05] px-5 text-lg font-semibold text-white transition-colors hover:bg-white/[0.09]"
-        >
-          <span className="flex size-[20px] items-center justify-center rounded-full bg-white">
-            <Play className="size-2.5 translate-x-px fill-ink text-ink" aria-hidden="true" />
-          </span>
-          Watch demo
-        </a>
-      </Reveal>
-    </section>
-  );
-}
-
-// Cards share a bottom edge; from lg up their heights step down towards the middle (356 / 270 / 220).
-const card = 'relative h-[270px] overflow-hidden rounded-[20px]';
-const darkCard = `${card} bg-gradient-to-b from-[#2a2c2b] via-[#1a1c1b] to-[#5b5e5c]`;
-
-/** The V-shaped row of five cards under the hero. */
-function Showcase() {
-  return (
-    <section
-      id="product"
-      aria-label="What FlagFlow does"
-      className="relative z-10 mx-auto mt-10 grid w-full max-w-[1116px] grid-cols-1 gap-5 px-4 pb-10 sm:grid-cols-2 lg:mt-[4.5vh] lg:grid-cols-5 lg:items-end"
+    <p
+      className={`inline-flex items-center gap-2 font-mono text-[12px] tracking-[0.08em] uppercase ${
+        dark ? 'text-lime' : 'text-ink/60'
+      }`}
     >
-      {/* 1 — team photo */}
-      <Reveal delay={0.32} className="relative">
-        <div className={`${card} bg-[#1b1d1c] lg:h-[320px]`}>
-          <Photo
-            src={pairAtDesk}
-            eager
-            alt="Two engineers at a desk, one wearing headphones"
-            className="absolute inset-0 size-full"
-          />
-        </div>
-        {/* Sits across the top corner of card 2, which starts 86px lower. */}
-        <span className="absolute top-[59px] -right-6 z-10 hidden items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-medium text-ink shadow-[0_10px_30px_rgb(0_0_0/0.4)] lg:inline-flex">
-          <span className="size-3 rounded-[2px] bg-ink" aria-hidden="true" />
-          Engineering team
-        </span>
-      </Reveal>
-
-      {/* 2 — propagation stat */}
-      <Reveal delay={0.38}>
-        <div
-          className={`${card} flex flex-col items-center justify-center bg-white px-6 text-center lg:h-[243px]`}
-        >
-          <p className="text-[40px] leading-none tracking-tight text-ink">&lt;1s</p>
-          <p className="mt-3 text-[14px] leading-snug text-ink/60">
-            From a toggle in the dashboard
-            <br />
-            to every running app
-          </p>
-        </div>
-      </Reveal>
-
-      {/* 3 — targeting */}
-      <Reveal delay={0.44}>
-        <div id="how" className={`${darkCard} lg:h-[198px]`}>
-          <h2 className="relative z-10 p-5 text-2xl leading-tight font-semibold tracking-tight text-white">
-            Target by Your Own User IDs
-          </h2>
-          <ul
-            className="absolute right-4 bottom-4 left-4 flex gap-2 font-mono text-sm"
-            aria-label="Example targets"
-          >
-            {['U001', 'U017'].map((id) => (
-              <li
-                key={id}
-                className="flex flex-1 items-center justify-between rounded-xl border border-white/10 bg-black/45 px-3 py-2 text-white/85 backdrop-blur"
-              >
-                {id}
-                <span
-                  className="size-2 rounded-full bg-lime shadow-[0_0_10px_var(--color-lime)]"
-                  aria-label="on"
-                />
-              </li>
-            ))}
-          </ul>
-        </div>
-      </Reveal>
-
-      {/* 4 — rollout stages */}
-      <Reveal delay={0.5}>
-        <div className={`${darkCard} lg:h-[243px]`}>
-          <h2 className="p-5 text-2xl leading-tight font-semibold tracking-tight text-white">
-            Inactive, Testing, Live
-          </h2>
-          <div className="absolute right-4 bottom-4 left-4 flex h-[117px] items-end gap-3" aria-hidden="true">
-            <div className="h-[52%] flex-1 rounded-lg bg-white/10" />
-            <div className="h-[34%] flex-1 rounded-lg bg-white/10" />
-            <div className="h-full flex-1 rounded-lg bg-lime" />
-            <div className="h-[48%] flex-1 rounded-lg bg-white/10" />
-          </div>
-        </div>
-      </Reveal>
-
-      {/* 5 — no redeploys */}
-      <Reveal delay={0.56} className="sm:col-span-2 lg:col-span-1">
-        <div id="demo" className={`${card} bg-white lg:h-[320px]`}>
-          <div className="p-6">
-            <p className="text-[40px] leading-none tracking-tight text-ink">0</p>
-            <p className="mt-3 text-[14px] text-ink/60">Redeploys to change who sees a feature</p>
-            <div className="mt-5 flex flex-wrap gap-1.5 font-mono">
-              {['dark_mode', 'new_checkout'].map((key) => (
-                <span key={key} className="rounded-full bg-ink px-3.5 py-2 text-[13px] text-lime">
-                  {key}
-                </span>
-              ))}
-            </div>
-          </div>
-          <Photo
-            src={teamAtMonitor}
-            eager
-            alt="A team gathered around a monitor"
-            className="absolute right-0 bottom-0 left-0 h-[108px] w-full object-[center_30%]"
-          />
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
-const ABOUT =
-  "At FlagFlow, we believe shipping a feature shouldn't mean shipping a deploy. We built a flag service for small SaaS teams that puts every release in your hands: turn it on for a few users by their own IDs, widen it to everyone, or switch it off the moment something breaks, and every running app hears about it in under a second.";
-
-function Word({
-  progress,
-  range,
-  children,
-}: {
-  progress: MotionValue<number>;
-  range: [number, number];
-  children: string;
-}) {
-  const color = useTransform(progress, range, ['#b8bbb9', '#0b0d0c']);
-  return <motion.span style={{ color }}>{children} </motion.span>;
-}
-
-/** Words darken one by one as the paragraph scrolls through the viewport. */
-function ScrollRevealText({ text, className }: { text: string; className: string }) {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const reduced = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.55'] });
-  if (reduced) {
-    return (
-      <p ref={ref} className={`${className} text-ink`}>
-        {text}
-      </p>
-    );
-  }
-
-  const words = text.split(' ');
-  return (
-    <p ref={ref} className={className}>
-      {words.map((word, i) => (
-        <Word key={i} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]}>
-          {word}
-        </Word>
-      ))}
+      <span className={`h-px w-6 ${dark ? 'bg-lime/60' : 'bg-ink/30'}`} aria-hidden="true" />
+      {children}
     </p>
   );
 }
 
-function About() {
-  return (
-    <section
-      id="about"
-      aria-labelledby="about-label"
-      className="mx-auto flex max-w-[1116px] flex-col justify-center px-4 py-20 lg:min-h-dvh lg:py-[7.2vh]"
-    >
-      <div className="grid gap-6 lg:grid-cols-[1fr_2.5fr] lg:gap-10">
-        <h2
-          id="about-label"
-          className="flex items-center gap-2.5 self-start text-[clamp(1.35rem,1.8vw,1.8rem)] leading-none font-semibold tracking-[-0.03em] text-ink lg:pt-1.5"
-        >
-          <span className="size-3 rounded-[3px] bg-lime" aria-hidden="true" />
-          About FlagFlow
-        </h2>
-        <ScrollRevealText
-          text={ABOUT}
-          className="text-[clamp(1.35rem,min(2.25vw,3.78vh),2.25rem)] leading-[1.2] font-normal tracking-[-0.02em]"
-        />
-      </div>
+const primaryButton =
+  'inline-flex h-12 items-center gap-2 rounded-[10px] bg-lime px-5 text-lg font-semibold text-ink transition-[filter,transform] hover:brightness-110 active:translate-y-px';
+const ghostButton =
+  'inline-flex h-12 items-center gap-2 rounded-[10px] border border-white/12 bg-white/[0.04] px-5 text-lg font-semibold text-white transition-colors hover:bg-white/[0.08]';
 
-      <div className="mt-14 grid gap-4 md:grid-cols-2 lg:mt-[6.3vh] lg:grid-cols-[1fr_1fr_0.85fr]">
-        <Photo
-          src={teamTable}
-          alt="Four teammates working around a shared table"
-          className="h-[270px] w-full rounded-[20px] lg:h-[clamp(198px,32.4vh,342px)]"
-        />
-        <Photo
-          src={onCall}
-          alt="Two engineers pointing at a screen together"
-          className="h-[270px] w-full rounded-[20px] object-[center_35%] lg:h-[clamp(198px,32.4vh,342px)]"
-        />
-        <div className="flex flex-col items-start justify-end gap-5 pt-4 md:col-span-2 lg:col-span-1 lg:pl-2">
-          <h3 className="text-2xl leading-snug font-medium tracking-[-0.02em] text-ink">
-            Built for the Team
-            <br />
-            on Call
-          </h3>
-          <Link
-            to="/register"
-            className="inline-flex h-[47px] items-center gap-2 rounded-[9px] bg-lime px-5 text-lg font-semibold text-ink transition-[filter,transform] hover:brightness-105 active:translate-y-px"
-          >
-            Learn more
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
-      </div>
-    </section>
+function Switch({ on, label, onToggle }: { on: boolean; label: string; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={label}
+      onClick={onToggle}
+      className={`relative h-6 w-10 shrink-0 rounded-full transition-colors duration-200 ${on ? 'bg-lime' : 'bg-white/15'}`}
+    >
+      <motion.span
+        className={`absolute top-1 left-1 size-4 rounded-full ${on ? 'bg-ink' : 'bg-white'}`}
+        animate={{ x: on ? 16 : 0 }}
+        transition={transition.spring}
+      />
+    </button>
   );
 }
 
-// The real stack from PLAN.md. FlagFlow has no customers yet, so this strip names what it runs on.
-const STACK = [
-  { label: 'Node.js', icon: Server },
-  { label: 'PostgreSQL', icon: Database },
-  { label: 'Redis', icon: Layers },
-  { label: 'Prisma', icon: Box },
-  { label: 'Server-Sent Events', icon: Radio },
-  { label: 'React', icon: Code2 },
-  { label: 'TypeScript', icon: Code2 },
+// ---------------------------------------------------------------------------------------------------
+// Hero, with an interactive preview: the dashboard's toggles on one side, a customer app on the other.
+
+type DemoFlag = 'dark_mode' | 'beta_banner' | 'new_checkout' | 'chat_widget';
+
+const DEMO_FLAGS: { key: DemoFlag; note: string }[] = [
+  { key: 'dark_mode', note: 'Theme' },
+  { key: 'beta_banner', note: 'Banner' },
+  { key: 'new_checkout', note: 'Checkout' },
+  { key: 'chat_widget', note: 'Support chat' },
 ];
 
-const FEATURES = [
-  {
-    icon: UsersRound,
-    title: 'Target by User ID',
-    body: 'Turn a flag on for U001 and U017 using the IDs your app already has.',
-  },
-  {
-    icon: Zap,
-    title: 'Live in Under a Second',
-    body: 'Changes stream to every running app. No redeploy, no polling.',
-  },
-  {
-    icon: Power,
-    title: 'Switch It Off Fast',
-    body: 'Something broke? Turn the flag off and the feature is gone for everyone.',
-  },
-  {
-    icon: History,
-    title: 'Every Change on Record',
-    body: 'The audit log keeps who changed what and when, for every flag.',
-  },
-];
+type StreamEvent = { id: number; key: DemoFlag; on: boolean; at: string };
 
-function StackMarquee() {
-  // Two copies so the strip can loop; the second is hidden from screen readers.
-  const items = (hidden: boolean) =>
-    STACK.map(({ label, icon: Icon }) => (
-      <li key={label} aria-hidden={hidden || undefined} className="flex shrink-0 items-center gap-2.5 px-10">
-        <Icon className="size-5" aria-hidden="true" />
-        <span className="text-xl font-semibold tracking-[-0.02em]">{label}</span>
-      </li>
-    ));
+function LivePreview() {
+  // What the dashboard says, and what the app has received. The app catches up a beat later, as over the stream.
+  const [flags, setFlags] = useState<Record<DemoFlag, boolean>>({
+    dark_mode: false,
+    beta_banner: true,
+    new_checkout: false,
+    chat_widget: false,
+  });
+  const [app, setApp] = useState(flags);
+  const [events, setEvents] = useState<StreamEvent[]>([]);
+
+  const toggle = (key: DemoFlag) => {
+    const on = !flags[key];
+    setFlags((f) => ({ ...f, [key]: on }));
+    window.setTimeout(() => {
+      setApp((a) => ({ ...a, [key]: on }));
+      setEvents((list) =>
+        [
+          { id: Date.now(), key, on, at: new Date().toLocaleTimeString([], { hour12: false }) },
+          ...list,
+        ].slice(0, 3),
+      );
+    }, 220);
+  };
+
+  const dark = app.dark_mode;
   return (
-    <div className="mask-[linear-gradient(to_right,transparent,#000_12%,#000_88%,transparent)] overflow-hidden text-white/45">
-      <ul className="marquee-track">
-        {items(false)}
-        {items(true)}
-      </ul>
+    <div
+      id="demo"
+      className="scroll-mt-24 rounded-[22px] border border-white/10 bg-[#121514]/90 p-2 shadow-[0_40px_120px_rgb(0_0_0/0.55)] backdrop-blur"
+    >
+      <div className="flex items-center gap-1.5 px-3 py-2.5" aria-hidden="true">
+        <span className="size-2.5 rounded-full bg-white/15" />
+        <span className="size-2.5 rounded-full bg-white/15" />
+        <span className="size-2.5 rounded-full bg-white/15" />
+        <span className="ml-3 font-mono text-[12px] text-white/40">Interactive preview: flip a flag</span>
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[1fr_1.15fr]">
+        {/* The dashboard side. */}
+        <div className="flex flex-col rounded-[16px] bg-[#0e1110] p-4 text-left sm:p-5">
+          <div className="flex items-center justify-between">
+            <p className="text-[15px] font-semibold text-white">Acme Inc. · Flags</p>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-lime/10 px-2.5 py-1 font-mono text-[11px] text-lime">
+              <span className="size-1.5 animate-pulse rounded-full bg-lime" aria-hidden="true" />
+              stream open
+            </span>
+          </div>
+          <ul className="mt-4 divide-y divide-white/[0.06] rounded-xl border border-white/[0.06]">
+            {DEMO_FLAGS.map(({ key, note }) => (
+              <li key={key} className="flex items-center gap-3 px-3.5 py-3">
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-mono text-[13px] text-white">{key}</span>
+                  <span className="block text-[12px] text-white/45">{note}</span>
+                </span>
+                <span
+                  className={`hidden rounded-full px-2 py-0.5 text-[11px] font-medium sm:inline ${
+                    flags[key] ? 'bg-lime/12 text-lime' : 'bg-white/[0.06] text-white/50'
+                  }`}
+                >
+                  {flags[key] ? 'Live' : 'Inactive'}
+                </span>
+                <Switch on={flags[key]} label={key} onToggle={() => toggle(key)} />
+              </li>
+            ))}
+          </ul>
+          <div
+            className="mt-4 min-h-[76px] rounded-xl bg-black/30 p-3 font-mono text-[11.5px] leading-relaxed"
+            aria-live="polite"
+          >
+            {events.length === 0 ? (
+              <p className="text-white/35">Waiting for a change…</p>
+            ) : (
+              <ul>
+                <AnimatePresence initial={false}>
+                  {events.map((e) => (
+                    <motion.li
+                      key={e.id}
+                      layout
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={transition.base}
+                      className="truncate text-white/55"
+                    >
+                      <span className="text-white/30">{e.at}</span>{' '}
+                      <span className="text-lime">flag.updated</span> {e.key}={e.on ? 'on' : 'off'}
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
+            )}
+          </div>
+        </div>
+
+        {/* The customer's app, as user U001 sees it. */}
+        <div
+          className={`relative flex min-h-[320px] flex-col overflow-hidden rounded-[16px] text-left transition-colors duration-500 ${
+            dark ? 'bg-[#16181d] text-white' : 'bg-[#f4f5f2] text-ink'
+          }`}
+        >
+          <div
+            className={`flex items-center justify-between px-5 py-3.5 ${dark ? 'border-white/10' : 'border-ink/10'} border-b`}
+          >
+            <span className="text-[15px] font-bold tracking-tight">acme</span>
+            <span className={`font-mono text-[11px] ${dark ? 'text-white/50' : 'text-ink/50'}`}>
+              signed in as U001
+            </span>
+          </div>
+          <AnimatePresence initial={false}>
+            {app.beta_banner && (
+              <motion.p
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={transition.base}
+                className="overflow-hidden bg-iris text-center text-[13px] font-medium text-white"
+              >
+                <span className="block py-2">You're in the beta. Tell us what you think.</span>
+              </motion.p>
+            )}
+          </AnimatePresence>
+          <div className="flex flex-1 flex-col p-5">
+            <p
+              className={`text-[12px] font-medium tracking-wide uppercase ${dark ? 'text-white/45' : 'text-ink/45'}`}
+            >
+              Order summary
+            </p>
+            <div className={`mt-3 space-y-2 text-[14px] ${dark ? 'text-white/75' : 'text-ink/75'}`}>
+              <p className="flex justify-between">
+                <span>Team plan × 1</span>
+                <span>$49.00</span>
+              </p>
+              <p className="flex justify-between">
+                <span>Tax</span>
+                <span>$4.90</span>
+              </p>
+              <p
+                className={`flex justify-between border-t pt-2 font-semibold ${dark ? 'border-white/10 text-white' : 'border-ink/10 text-ink'}`}
+              >
+                <span>Total</span>
+                <span>$53.90</span>
+              </p>
+            </div>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={String(app.new_checkout)}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={transition.base}
+                className={`mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[10px] text-[15px] font-semibold ${
+                  app.new_checkout ? 'bg-lime text-ink' : dark ? 'bg-white text-ink' : 'bg-ink text-white'
+                }`}
+              >
+                {app.new_checkout ? (
+                  <>
+                    <Zap className="size-4" aria-hidden="true" /> Pay in one click
+                  </>
+                ) : (
+                  'Continue to payment'
+                )}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+          <AnimatePresence>
+            {app.chat_widget && (
+              <motion.span
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={transition.spring}
+                className="absolute right-4 bottom-[76px] grid size-11 place-items-center rounded-full bg-iris text-white shadow-lg"
+                aria-label="Support chat"
+              >
+                <MessageCircle className="size-5" aria-hidden="true" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     </div>
   );
 }
 
-function Features() {
+function Hero() {
   return (
-    <section
-      id="features"
-      aria-labelledby="features-title"
-      className="flex flex-col justify-center bg-ink py-20 text-white lg:min-h-dvh lg:py-[6.3vh]"
-    >
-      <div className="mx-auto w-full max-w-[1116px] px-4">
-        <p className="flex items-center justify-center gap-2.5 text-[14px] text-white/60">
-          <span className="size-3 rounded-[2px] bg-lime" aria-hidden="true" />
-          Built on
-        </p>
-      </div>
-      <div className="mx-auto mt-8 w-full max-w-[1116px] lg:mt-[3.6vh]">
-        <StackMarquee />
-      </div>
-
-      <div className="mx-auto mt-20 w-full max-w-[1116px] px-4 lg:mt-[8.1vh]">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <h2
-            id="features-title"
-            className="text-[clamp(2.25rem,min(4.32vw,7.2vh),4.05rem)] leading-[1.02] font-bold tracking-[-0.055em]"
+    <section className="relative z-10 px-4 pt-32 pb-20 lg:pt-36">
+      <div className="mx-auto max-w-[1080px] text-center">
+        <Reveal>
+          <a
+            href="#how"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pr-3.5 pl-1 text-[13.5px] text-white/80 transition-colors hover:bg-white/[0.08]"
           >
-            Everything
-            <br />a Rollout Needs
-          </h2>
-          <div className="max-w-[270px] lg:pb-2">
-            <p className="text-lg leading-snug text-white/55">
-              Turn it on, widen it, or switch it off, and always know who did it.
-            </p>
-            <Link
-              to="/register"
-              className="mt-5 inline-flex h-[47px] items-center gap-2 rounded-[9px] bg-lime px-5 text-lg font-semibold text-ink transition-[filter,transform] hover:brightness-110 active:translate-y-px"
-            >
-              Get started
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
-        </div>
-
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:mt-[5.4vh] lg:grid-cols-4">
-          {FEATURES.map(({ icon: Icon, title, body }) => (
-            <li
-              key={title}
-              className="feature-card group relative flex h-[252px] flex-col overflow-hidden rounded-[16px] bg-[#161918] p-7 lg:h-[clamp(270px,36vh,369px)]"
-            >
-              <Icon
-                className="relative size-8 stroke-[1.5] text-white transition-colors duration-500 group-hover:text-ink"
+            <span className="rounded-full bg-lime/15 px-2.5 py-0.5 font-mono text-[11.5px] text-lime">
+              SSE
+            </span>
+            Flag changes reach your app in under a second
+            <ArrowRight className="size-3.5" aria-hidden="true" />
+          </a>
+        </Reveal>
+        <Reveal delay={0.06}>
+          <h1 className="mx-auto mt-8 max-w-[900px] text-[clamp(2.4rem,6vw,4.9rem)] leading-[0.98] font-bold tracking-[-0.05em] text-white">
+            Ship Features <span className="text-white/35">Without</span>{' '}
+            <span className="relative whitespace-nowrap">
+              Redeploying
+              <svg
+                viewBox="0 0 300 12"
+                preserveAspectRatio="none"
+                className="absolute -bottom-2 left-0 h-3 w-full text-lime"
                 aria-hidden="true"
-              />
-              <h3 className="relative mt-7 max-w-[11ch] text-[27px] leading-[1.15] font-medium tracking-[-0.025em] text-white transition-colors duration-500 group-hover:text-ink">
-                {title}
-              </h3>
-              <p className="relative mt-auto text-[15px] leading-snug text-white/60 transition-colors duration-500 group-hover:text-ink/65">
-                {body}
-              </p>
+              >
+                <path
+                  d="M2 9C60 3 180 1 298 7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </span>
+          </h1>
+        </Reveal>
+        <Reveal delay={0.12}>
+          <p className="mx-auto mt-8 max-w-[520px] text-lg leading-relaxed text-white/60">
+            Turn a feature on for the users you pick, widen it to everyone, or switch it off when something
+            breaks. Your running app hears about it straight away.
+          </p>
+        </Reveal>
+        <Reveal delay={0.18} className="mt-9 flex flex-wrap items-center justify-center gap-3">
+          <Link to="/register" className={primaryButton}>
+            Get started free
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+          <a href="#docs" className={ghostButton}>
+            Read the quickstart
+          </a>
+        </Reveal>
+      </div>
+
+      <Reveal delay={0.26} className="mx-auto mt-16 max-w-[1080px]">
+        <LivePreview />
+      </Reveal>
+    </section>
+  );
+}
+
+// The real stack from PLAN.md. FlagFlow has no customers yet, so this row names what it runs on.
+const STACK = ['Node.js', 'PostgreSQL', 'Redis', 'Prisma', 'Server-Sent Events', 'React', 'TypeScript'];
+
+function StackRow() {
+  return (
+    <div className="relative z-10 mx-auto max-w-[1080px] px-4 pb-20">
+      <div className="flex flex-col items-center gap-5 border-t border-white/[0.07] pt-10 md:flex-row md:justify-between">
+        <p className="shrink-0 font-mono text-[12px] tracking-[0.08em] text-white/40 uppercase">Runs on</p>
+        <ul className="flex flex-wrap justify-center gap-x-7 gap-y-3 md:justify-end">
+          {STACK.map((label) => (
+            <li key={label} className="text-[15px] font-semibold tracking-[-0.01em] text-white/50">
+              {label}
             </li>
           ))}
         </ul>
       </div>
-    </section>
-  );
-}
-
-// Placeholder prices: billing is out of scope for v1 (PRODUCT.md), so these are for the owner to set.
-// Every listed feature exists in the product today; only the limits are placeholders too.
-const PLANS = [
-  {
-    name: 'Starter',
-    icon: Diamond,
-    monthly: 0,
-    yearly: 0,
-    blurb: 'For a side project or trying FlagFlow out on one app',
-    featured: false,
-    features: [
-      'Up to 10 flags',
-      'Up to 3 teammates',
-      'Target by your own user IDs',
-      'Live updates in under a second',
-      'Audit log for every change',
-    ],
-  },
-  {
-    name: 'Team',
-    icon: Scan,
-    monthly: 49,
-    yearly: 39,
-    blurb: 'For a team rolling out features to customers every week',
-    featured: true,
-    features: [
-      'Unlimited flags',
-      'Up to 25 teammates',
-      'Admin and member roles',
-      'Email invites for new teammates',
-      'End-user lookup by ID',
-    ],
-  },
-  {
-    name: 'Business',
-    icon: Component,
-    monthly: 149,
-    yearly: 119,
-    blurb: 'For larger orgs running FlagFlow across several apps',
-    featured: false,
-    features: [
-      'Everything in Team',
-      'Unlimited teammates',
-      'Multiple API keys',
-      'Full audit history',
-      'Priority email support',
-    ],
-  },
-];
-
-type Billing = 'monthly' | 'yearly';
-
-function BillingToggle({ value, onChange }: { value: Billing; onChange: (next: Billing) => void }) {
-  return (
-    <div role="group" aria-label="Billing period" className="inline-flex rounded-[11px] bg-[#1c1f1e] p-1">
-      {(['monthly', 'yearly'] as const).map((option) => (
-        <button
-          key={option}
-          type="button"
-          aria-pressed={value === option}
-          onClick={() => onChange(option)}
-          className={`relative h-[40px] rounded-[8px] px-5 text-base font-semibold capitalize transition-colors ${
-            value === option ? 'text-ink' : 'text-white hover:text-white/75'
-          }`}
-        >
-          {value === option && (
-            <motion.span
-              layoutId="billing-pill"
-              className="absolute inset-0 rounded-[8px] bg-lime"
-              transition={{ duration: 0.4, ease: EASE_OUT }}
-            />
-          )}
-          <span className="relative">{option}</span>
-        </button>
-      ))}
     </div>
   );
 }
 
-function Pricing() {
-  const [billing, setBilling] = useState<Billing>('monthly');
+// ---------------------------------------------------------------------------------------------------
+// Product: a bento of what the dashboard does, each tile with a small picture of the real feature.
+
+const tile = 'relative overflow-hidden rounded-[20px] border border-white/[0.07] bg-[#121514] p-6 sm:p-7';
+
+function TileHeading({ icon: Icon, title, body }: { icon: typeof Zap; title: string; body: string }) {
+  return (
+    <>
+      <span className="grid size-10 place-items-center rounded-[10px] bg-white/[0.06] text-lime">
+        <Icon className="size-5 stroke-[1.7]" aria-hidden="true" />
+      </span>
+      <h3 className="mt-5 text-[22px] leading-tight font-semibold tracking-[-0.025em] text-white">{title}</h3>
+      <p className="mt-2 max-w-[380px] text-[15px] leading-snug text-white/55">{body}</p>
+    </>
+  );
+}
+
+const AUDIT_ROWS = [
+  { who: 'admin@acme.test', what: 'turned on', flag: 'dark_mode', when: '2m ago' },
+  { who: 'admin@acme.test', what: 'added U017 to', flag: 'new_checkout', when: '1h ago' },
+  { who: 'admin@acme.test', what: 'created', flag: 'export_report', when: 'Fri' },
+];
+
+function Product() {
+  return (
+    <section
+      id="product"
+      aria-labelledby="product-title"
+      className="scroll-mt-20 bg-ink py-24 text-white lg:py-32"
+    >
+      <div className="mx-auto max-w-[1080px] px-4">
+        <Reveal className="max-w-[640px]">
+          <Eyebrow>Product</Eyebrow>
+          <h2
+            id="product-title"
+            className="mt-5 text-[clamp(2.1rem,4.2vw,3.6rem)] leading-[1.02] font-bold tracking-[-0.05em]"
+          >
+            Everything a Rollout Needs, Nothing It Doesn't
+          </h2>
+          <p className="mt-5 text-lg leading-snug text-white/55">
+            On/off flags, a target list or all users, and a record of every change. Deliberately simple and
+            fast.
+          </p>
+        </Reveal>
+
+        <div className="mt-14 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <Reveal className="md:col-span-2">
+            <div className={`${tile} h-full`}>
+              <TileHeading
+                icon={UsersRound}
+                title="Target by Your Own User IDs"
+                body="Turn a flag on for U001 and U017 with the IDs your app already has. Your users never need a FlagFlow account."
+              />
+              <div
+                className="mt-7 flex flex-wrap items-center gap-2 font-mono text-[13px]"
+                aria-hidden="true"
+              >
+                {['U001', 'U017', 'U042'].map((id) => (
+                  <span
+                    key={id}
+                    className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white/85"
+                  >
+                    <span className="size-1.5 rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)]" />
+                    {id}
+                  </span>
+                ))}
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-white/15 px-3 py-2 text-white/40">
+                  <Plus className="size-3.5" /> add ID
+                </span>
+                <span className="ml-auto hidden items-center gap-2 rounded-lg bg-white/[0.05] px-3 py-2 font-sans text-white/60 sm:inline-flex">
+                  All users <span className="h-4 w-7 rounded-full bg-white/15" />
+                </span>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.06}>
+            <div className={`${tile} flex h-full flex-col border-lime/20 bg-lime text-ink`}>
+              <Zap className="size-7 stroke-[1.7]" aria-hidden="true" />
+              <p className="mt-auto pt-10 text-[64px] leading-none font-semibold tracking-[-0.06em]">
+                &lt;1<span className="ml-1 text-[28px] tracking-[-0.03em]">sec</span>
+              </p>
+              <p className="mt-3 text-[15px] leading-snug text-ink/70">
+                From a toggle in the dashboard to every running copy of your app.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal>
+            <div className={`${tile} h-full`}>
+              <TileHeading
+                icon={Power}
+                title="Switch It Off Fast"
+                body="Something broke? Turn the flag off and the feature is gone for everyone."
+              />
+              <div
+                className="mt-7 flex items-center gap-3 rounded-xl border border-flame/25 bg-flame/[0.08] p-3"
+                aria-hidden="true"
+              >
+                <span className="grid size-9 place-items-center rounded-full bg-flame text-white">
+                  <Power className="size-4" />
+                </span>
+                <span className="font-mono text-[13px] text-white/80">new_checkout → off</span>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.06}>
+            <div className={`${tile} h-full`}>
+              <TileHeading
+                icon={History}
+                title="Every Change on Record"
+                body="The audit log keeps who changed what, and when."
+              />
+              <ul className="mt-6 space-y-2 text-[12.5px]" aria-hidden="true">
+                {AUDIT_ROWS.map((r) => (
+                  <li
+                    key={r.flag}
+                    className="flex items-center gap-2 rounded-lg bg-black/25 px-3 py-2 text-white/60"
+                  >
+                    <span className="truncate">
+                      {r.what} <span className="font-mono text-white/90">{r.flag}</span>
+                    </span>
+                    <span className="ml-auto shrink-0 text-white/35">{r.when}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.12}>
+            <div className={`${tile} h-full`}>
+              <TileHeading
+                icon={ShieldCheck}
+                title="Roles and Invites"
+                body="Admins manage the team and API keys; members run rollouts. Invite links expire after 48 hours."
+              />
+              <div className="mt-6 flex gap-2 text-[12.5px]" aria-hidden="true">
+                <span className="rounded-full bg-lime/12 px-3 py-1 text-lime">Admin</span>
+                <span className="rounded-full bg-iris/25 px-3 py-1 text-[#c9c3ff]">Member</span>
+                <span className="rounded-full bg-white/[0.06] px-3 py-1 text-white/55">48h invite</span>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal>
+            <div className={`${tile} h-full`}>
+              <TileHeading
+                icon={Search}
+                title="Look Up Any End User"
+                body="Search an ID and see exactly which flags that user gets, then change one just for them."
+              />
+              <div
+                className="mt-6 flex items-center gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5"
+                aria-hidden="true"
+              >
+                <Search className="size-4 text-white/40" />
+                <span className="font-mono text-[13px] text-white">U001</span>
+                <span className="ml-auto text-[12px] text-white/40">4 of 6 on</span>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.06} className="md:col-span-2">
+            <div className="relative h-full min-h-[260px] overflow-hidden rounded-[20px]">
+              <Photo
+                src={teamAtMonitor}
+                alt="A team gathered around a monitor"
+                className="absolute inset-0 size-full"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-transparent" />
+              <div className="absolute right-6 bottom-6 left-6 flex flex-wrap items-end justify-between gap-4">
+                <p className="max-w-[360px] text-[22px] leading-tight font-semibold tracking-[-0.025em] text-white">
+                  The dashboard your whole team opens during a rollout.
+                </p>
+                <Link
+                  to="/register"
+                  className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-white px-4 text-[15px] font-semibold text-ink transition-colors hover:bg-lime"
+                >
+                  Try it
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------
+// How it works: three steps on a light ground, with the team photos.
+
+const STEPS = [
+  {
+    title: 'Create a flag',
+    body: 'Give it a key like new_checkout. Flags start off, so you can create one before the feature ships.',
+    sample: 'new_checkout',
+  },
+  {
+    title: 'Check it in your code',
+    body: 'Your server asks the SDK. Rules live in memory, so a lookup never waits on the network.',
+    sample: "isEnabled('new_checkout', user.id)",
+  },
+  {
+    title: 'Roll it out live',
+    body: 'Add a few user IDs, then turn it on for all users. Every running app updates in under a second.',
+    sample: 'Testing → Live',
+  },
+];
+
+const STATS = [
+  { value: '<1s', label: 'from toggle to every running app' },
+  { value: '0', label: 'redeploys to change who sees a feature' },
+  { value: '48h', label: 'before an invite link expires' },
+];
+
+function HowItWorks() {
+  return (
+    <section
+      id="how"
+      aria-labelledby="how-title"
+      className="scroll-mt-20 bg-[#f4f5f2] py-24 text-ink lg:py-32"
+    >
+      <div className="mx-auto max-w-[1080px] px-4">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-16">
+          <Reveal>
+            <Eyebrow dark={false}>How it works</Eyebrow>
+            <h2
+              id="how-title"
+              className="mt-5 text-[clamp(2.1rem,4.2vw,3.6rem)] leading-[1.02] font-bold tracking-[-0.05em]"
+            >
+              Built for the Team on Call
+            </h2>
+            <p className="mt-5 max-w-[440px] text-lg leading-snug text-ink/60">
+              Shipping a feature shouldn't mean shipping a deploy. Three steps, and every release is in your
+              hands.
+            </p>
+            <div className="mt-10 grid grid-cols-2 gap-3">
+              <Photo
+                src={teamTable}
+                alt="Four teammates working around a shared table"
+                className="h-[200px] w-full rounded-[16px] lg:h-[240px]"
+              />
+              <Photo
+                src={onCall}
+                alt="Two engineers pointing at a screen together"
+                className="mt-8 h-[200px] w-full rounded-[16px] object-[center_35%] lg:h-[240px]"
+              />
+            </div>
+          </Reveal>
+
+          <ol className="relative space-y-4 lg:pt-16">
+            {STEPS.map((step, i) => (
+              <Reveal key={step.title} delay={i * 0.08}>
+                <li className="group flex gap-5 rounded-[18px] border border-ink/[0.08] bg-white p-6 shadow-[0_1px_0_rgb(0_0_0/0.03)] transition-shadow hover:shadow-[0_20px_50px_rgb(0_0_0/0.08)]">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ink font-mono text-[14px] text-lime">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="text-[20px] font-semibold tracking-[-0.02em]">{step.title}</h3>
+                    <p className="mt-1.5 text-[15px] leading-snug text-ink/60">{step.body}</p>
+                    <code className="mt-4 inline-block max-w-full truncate rounded-lg bg-ink px-3 py-1.5 font-mono text-[12.5px] text-lime">
+                      {step.sample}
+                    </code>
+                  </div>
+                </li>
+              </Reveal>
+            ))}
+          </ol>
+        </div>
+
+        <dl className="mt-20 grid grid-cols-1 gap-px overflow-hidden rounded-[18px] border border-ink/[0.08] bg-ink/[0.08] sm:grid-cols-3">
+          {STATS.map((s) => (
+            <div key={s.value} className="bg-[#f4f5f2] p-7">
+              <dt className="sr-only">{s.label}</dt>
+              <dd className="text-[52px] leading-none font-semibold tracking-[-0.05em]">{s.value}</dd>
+              <dd className="mt-3 text-[15px] text-ink/60">{s.label}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Use cases. FlagFlow has no customers to quote yet, so these are scenarios from the people in
+// PRODUCT.md, written as what happens, not as reviews from named people.
+
+const CASES = [
+  {
+    id: 'incident',
+    role: 'On-call engineer',
+    moment: 'Switching off a broken feature',
+    icon: Siren,
+    text: 'Checkout starts throwing errors at 2am. You switch new_checkout off, and it is gone from every running app in under a second. No hotfix, no redeploy.',
+    steps: ['Open new_checkout', 'Turn it off', 'Errors stop'],
+  },
+  {
+    id: 'support',
+    role: 'Support and product',
+    moment: "Debugging one user's report",
+    icon: LifeBuoy,
+    text: 'A customer says the new dashboard looks wrong. You search for U001, see exactly which flags they get, and turn one off just for them.',
+    steps: ['Search U001', 'See their flags', 'Change one for them'],
+  },
+  {
+    id: 'beta',
+    role: 'Product manager',
+    moment: 'Rolling out to a few users first',
+    icon: Rocket,
+    text: 'The beta goes to five friendly customers first. You add their user IDs to the flag, watch it for a week, then turn it on for all users.',
+    steps: ['Add five IDs', 'Watch for a week', 'All users'],
+  },
+  {
+    id: 'audit',
+    role: 'Team admin',
+    moment: 'Finding out who changed what',
+    icon: ShieldCheck,
+    text: 'A flag was turned on Friday and nobody remembers doing it. The audit log shows who changed it, what changed, and when.',
+    steps: ['Open the audit log', 'Filter by flag', 'See who and when'],
+  },
+];
+
+function UseCases() {
+  const [active, setActive] = useState(0);
+  const uid = useId();
+  const current = CASES[active]!;
+
+  // Arrow keys move between tabs, as the ARIA tabs pattern expects.
+  const onKey = (e: KeyboardEvent) => {
+    const step =
+      e.key === 'ArrowDown' || e.key === 'ArrowRight'
+        ? 1
+        : e.key === 'ArrowUp' || e.key === 'ArrowLeft'
+          ? -1
+          : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = (active + step + CASES.length) % CASES.length;
+    setActive(next);
+    document.getElementById(`${uid}-tab-${next}`)?.focus();
+  };
 
   return (
     <section
-      id="pricing"
-      aria-labelledby="pricing-title"
-      className="relative overflow-hidden bg-ink pt-20 pb-24 text-white lg:pt-[10.8vh] lg:pb-[3.6vh]"
+      id="use-cases"
+      aria-labelledby="cases-title"
+      className="scroll-mt-20 bg-ink py-24 text-white lg:py-32"
     >
-      {/* The giant faint word behind the heading. */}
-      <p
-        aria-hidden="true"
-        className="pointer-events-none absolute top-6 left-1/2 -translate-x-1/2 text-[25vw] leading-none font-bold tracking-[-0.06em] whitespace-nowrap text-white/[0.03] select-none lg:top-[1.8vh]"
-      >
-        PRICING
-      </p>
+      <div className="mx-auto max-w-[1080px] px-4">
+        <Reveal className="max-w-[640px]">
+          <Eyebrow>Use cases</Eyebrow>
+          <h2
+            id="cases-title"
+            className="mt-5 text-[clamp(2.1rem,4.2vw,3.6rem)] leading-[1.02] font-bold tracking-[-0.05em]"
+          >
+            A Normal Week With FlagFlow
+          </h2>
+        </Reveal>
 
-      <div className="relative mx-auto w-full max-w-[1116px] px-4">
-        <div className="flex flex-col items-center text-center">
-          <Reveal>
-            <span className="inline-flex h-[38px] items-center rounded-full border border-lime/60 px-4 text-[15px] font-medium text-lime">
-              Our plans
-            </span>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <h2
-              id="pricing-title"
-              className="mt-5 text-[clamp(2.025rem,min(4.14vw,6.75vh),3.825rem)] leading-[1.04] font-bold tracking-[-0.055em]"
-            >
-              Simple Pricing
-              <br />
-              for Any Size of Team
-            </h2>
-          </Reveal>
-          <Reveal delay={0.16}>
-            <p className="mt-4 max-w-[423px] text-base leading-snug text-white/55">
-              Start free on one app and upgrade when your team grows. Every plan streams changes live.
-            </p>
-          </Reveal>
-        </div>
-
-        {/* The plans fill a viewport of their own, so scrolling to them shows only the toggle and cards. */}
-        <div className="flex flex-col justify-center pt-12 lg:min-h-dvh lg:py-[4.5vh]">
-          <div className="flex justify-center">
-            <BillingToggle value={billing} onChange={setBilling} />
-          </div>
-
-          <ul className="mx-auto mt-8 grid w-full max-w-[972px] gap-4 lg:mt-[3.6vh] lg:grid-cols-3">
-            {PLANS.map(({ name, icon: Icon, monthly, yearly, blurb, features, featured }) => {
-              const price = billing === 'monthly' ? monthly : yearly;
+        <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-[0.9fr_1.4fr]">
+          <div
+            role="tablist"
+            aria-orientation="vertical"
+            aria-label="Use cases"
+            className="flex flex-col gap-2"
+            onKeyDown={onKey}
+          >
+            {CASES.map(({ id, role, moment, icon: Icon }, i) => {
+              const selected = i === active;
               return (
-                <li
-                  key={name}
-                  className={`flex flex-col rounded-[18px] p-6 ${
-                    featured
-                      ? 'bg-[linear-gradient(to_bottom,#151817_38%,#5f7d2c_82%,#93b44f)]'
-                      : 'bg-[#151817]'
+                <button
+                  key={id}
+                  id={`${uid}-tab-${i}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-controls={`${uid}-panel`}
+                  tabIndex={selected ? 0 : -1}
+                  onClick={() => setActive(i)}
+                  className={`relative flex items-center gap-4 rounded-[14px] px-4 py-3.5 text-left transition-colors ${
+                    selected ? 'text-white' : 'text-white/55 hover:bg-white/[0.03] hover:text-white/85'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="grid size-[47px] shrink-0 place-items-center rounded-[11px] bg-white/[0.08]">
-                      <Icon className="size-6 stroke-[1.5]" aria-hidden="true" />
-                    </span>
-                    <p className="flex items-baseline gap-1.5 pt-2">
-                      {/* The number rolls up when the billing period changes. */}
-                      <span className="inline-grid overflow-hidden text-[31px] whitespace-nowrap leading-none font-semibold tracking-[-0.04em]">
-                        <AnimatePresence mode="popLayout" initial={false}>
-                          <motion.span
-                            key={price}
-                            initial={{ y: '100%', opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: '-100%', opacity: 0 }}
-                            transition={{ duration: 0.45, ease: EASE_OUT }}
-                          >
-                            ${price}
-                          </motion.span>
-                        </AnimatePresence>
-                      </span>
-                      <span className="text-base tracking-[-0.02em] text-white/55">/per month</span>
-                    </p>
-                  </div>
-
-                  <h3 className="mt-6 text-[22px] font-semibold tracking-[-0.03em]">{name}</h3>
-                  <p className="mt-1.5 max-w-[297px] text-[14px] leading-snug text-white/55">{blurb}</p>
-                  <p className="mt-1 h-5 text-sm text-white/40">
-                    {billing === 'yearly' && price > 0 ? `Billed yearly at $${price * 12}` : ''}
-                  </p>
-
-                  <Link
-                    to="/register"
-                    className={`mt-4 inline-flex h-[41px] items-center justify-center gap-2 rounded-[9px] text-lg font-semibold text-ink transition-[filter,transform] active:translate-y-px ${
-                      featured ? 'bg-lime hover:brightness-110' : 'bg-white hover:brightness-90'
+                  {selected && (
+                    <motion.span
+                      layoutId="case-active"
+                      className="absolute inset-0 rounded-[14px] border border-white/10 bg-[#161918]"
+                      transition={transition.base}
+                    />
+                  )}
+                  <span
+                    className={`relative grid size-10 shrink-0 place-items-center rounded-full transition-colors ${
+                      selected ? 'bg-lime text-ink' : 'bg-white/[0.06]'
                     }`}
                   >
-                    Get started
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </Link>
+                    <Icon className="size-[18px] stroke-[1.7]" aria-hidden="true" />
+                  </span>
+                  <span className="relative">
+                    <span className="block text-[16px] font-semibold tracking-[-0.01em]">{role}</span>
+                    <span className="block text-[13.5px] text-white/50">{moment}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-                  <h4 className="mt-7 text-[17px] font-semibold tracking-[-0.02em]">Features</h4>
-                  <ul className="mt-4 space-y-3.5">
-                    {features.map((feature) => (
-                      <li
-                        key={feature}
-                        className={`flex items-center gap-3 text-[14px] ${featured ? 'text-white' : 'text-white/60'}`}
-                      >
-                        <CircleCheck className="size-5 shrink-0 stroke-[1.5]" aria-hidden="true" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+          <div
+            id={`${uid}-panel`}
+            role="tabpanel"
+            aria-labelledby={`${uid}-tab-${active}`}
+            className="relative overflow-hidden rounded-[20px] border border-white/[0.07] bg-gradient-to-br from-[#171a19] to-[#0f1211] p-7 sm:p-10"
+          >
+            <div
+              className="pointer-events-none absolute -top-24 -right-24 size-[300px] rounded-full bg-lime/15 blur-[90px]"
+              aria-hidden="true"
+            />
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.div
+                key={current.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={transition.base}
+                className="relative"
+              >
+                <p className="font-mono text-[12px] tracking-[0.08em] text-lime uppercase">
+                  {current.moment}
+                </p>
+                <p className="mt-5 text-[clamp(1.2rem,2vw,1.6rem)] leading-[1.35] font-medium tracking-[-0.02em]">
+                  {current.text}
+                </p>
+                <ol className="mt-9 flex flex-wrap items-center gap-2 text-[13.5px]">
+                  {current.steps.map((s, i) => (
+                    <li key={s} className="flex items-center gap-2">
+                      <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">
+                        {s}
+                      </span>
+                      {i < current.steps.length - 1 && (
+                        <ArrowRight className="size-3.5 text-white/30" aria-hidden="true" />
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        <Reveal className="mt-4">
+          <div className="relative h-[220px] overflow-hidden rounded-[20px]">
+            <Photo
+              src={pairAtDesk}
+              alt="Two engineers at a desk, one wearing headphones"
+              className="absolute inset-0 size-full object-[center_40%]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/40 to-transparent" />
+            <p className="absolute top-1/2 left-7 max-w-[300px] -translate-y-1/2 text-[22px] leading-tight font-semibold tracking-[-0.025em] sm:left-10">
+              Engineers and PMs, on the same switch.
+            </p>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Docs: the quickstart, with the real SDK and REST calls.
+
+const SNIPPETS = {
+  sdk: {
+    label: 'Node SDK',
+    code: `import { FlagClient } from '@flagflow/flag-client';
+
+const flags = new FlagClient({
+  baseUrl: process.env.FLAGFLOW_URL,
+  apiKey: process.env.FLAGFLOW_API_KEY, // server-side only
+});
+await flags.start(); // snapshot, then the live stream
+
+if (flags.isEnabled('new_checkout', user.id)) {
+  // show the new checkout
+}`,
+  },
+  rest: {
+    label: 'REST',
+    code: `curl "$FLAGFLOW_URL/v1/flags/evaluate?userId=U001" \\
+  -H "x-api-key: $FLAGFLOW_API_KEY"
+
+# → { "version": 12,
+#     "flags": { "dark_mode": true, "new_checkout": false } }`,
+  },
+} as const;
+
+type SnippetKey = keyof typeof SNIPPETS;
+
+function CodeBlock() {
+  const [tab, setTab] = useState<SnippetKey>('sdk');
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = window.setTimeout(() => setCopied(false), 1600);
+    return () => window.clearTimeout(t);
+  }, [copied]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(SNIPPETS[tab].code);
+      setCopied(true);
+    } catch {
+      // Clipboard can be blocked (insecure origin, permissions); the code stays selectable.
+    }
+  };
+
+  return (
+    <div className="overflow-hidden rounded-[18px] border border-white/10 bg-[#0e1110]">
+      <div className="flex items-center gap-1 border-b border-white/[0.07] px-2 py-2">
+        <div role="tablist" aria-label="Snippet" className="flex gap-1">
+          {(Object.keys(SNIPPETS) as SnippetKey[]).map((key) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              onClick={() => setTab(key)}
+              className={`rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors ${
+                tab === key ? 'bg-white/[0.08] text-white' : 'text-white/50 hover:text-white'
+              }`}
+            >
+              {SNIPPETS[key].label}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => void copy()}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] text-white/60 transition-colors hover:bg-white/[0.06] hover:text-white"
+        >
+          {copied ? (
+            <Check className="size-3.5 text-lime" aria-hidden="true" />
+          ) : (
+            <Copy className="size-3.5" aria-hidden="true" />
+          )}
+          <span aria-live="polite">{copied ? 'Copied' : 'Copy'}</span>
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-5 font-mono text-[12.5px] leading-[1.7] text-white/80">
+        <code>{SNIPPETS[tab].code}</code>
+      </pre>
+    </div>
+  );
+}
+
+function Docs() {
+  const links = [
+    { label: 'OpenAPI spec', note: 'Every endpoint, as JSON', href: DOCS_URL, icon: FileJson },
+    DEMO_URL
+      ? { label: 'Live demo app', note: 'A customer app wired to six flags', href: DEMO_URL, icon: Rocket }
+      : {
+          label: 'Interactive preview',
+          note: 'Flip a flag at the top of this page',
+          href: '#demo',
+          icon: Rocket,
+        },
+  ];
+  return (
+    <section
+      id="docs"
+      aria-labelledby="docs-title"
+      className="scroll-mt-20 border-t border-white/[0.06] bg-ink py-24 text-white lg:py-32"
+    >
+      <div className="mx-auto grid max-w-[1080px] grid-cols-1 gap-12 px-4 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
+        <Reveal>
+          <Eyebrow>Docs</Eyebrow>
+          <h2
+            id="docs-title"
+            className="mt-5 text-[clamp(2.1rem,4.2vw,3.4rem)] leading-[1.02] font-bold tracking-[-0.05em]"
+          >
+            Ten Lines to Your First Flag
+          </h2>
+          <p className="mt-5 max-w-[420px] text-lg leading-snug text-white/55">
+            Create an org, copy the API key it shows you once, and check a flag from your server. Unknown
+            flags and users are simply off.
+          </p>
+          <ul className="mt-8 space-y-2.5">
+            {links.map(({ label, note, href, icon: Icon }) => {
+              const external = href.startsWith('http');
+              return (
+                <li key={label}>
+                  <a
+                    href={href}
+                    {...(external && { target: '_blank', rel: 'noreferrer' })}
+                    className="group flex items-center gap-4 rounded-[14px] border border-white/[0.07] bg-white/[0.02] px-4 py-3.5 transition-colors hover:border-lime/30 hover:bg-white/[0.04]"
+                  >
+                    <Icon className="size-5 text-lime" aria-hidden="true" />
+                    <span>
+                      <span className="block text-[15px] font-semibold">{label}</span>
+                      <span className="block text-[13px] text-white/45">{note}</span>
+                    </span>
+                    {external && <span className="sr-only">(opens in a new tab)</span>}
+                    <ArrowUpRight
+                      className="ml-auto size-4 text-white/35 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-lime"
+                      aria-hidden="true"
+                    />
+                  </a>
                 </li>
               );
             })}
           </ul>
-        </div>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <CodeBlock />
+        </Reveal>
       </div>
     </section>
   );
 }
 
-// Real numbers from how FlagFlow works (PRODUCT.md), not usage metrics it doesn't have yet.
-const STATS = [
+// ---------------------------------------------------------------------------------------------------
+// FAQ: plain answers from PRODUCT.md, including what v1 does not do.
+
+const FAQ = [
   {
-    value: '<1',
-    unit: 'Second',
-    body: 'The longest a flag change takes to reach every running copy of your app.',
-    tone: 'bg-lime text-ink',
-    muted: 'text-ink/80',
+    q: 'Do my end users need FlagFlow accounts?',
+    a: 'No. You target them by the IDs your app already uses, such as U001. Only your team signs in to the dashboard.',
   },
   {
-    value: '0',
-    unit: 'Redeploys',
-    body: 'To turn a feature on for one user, a hundred, or everyone.',
-    tone: 'bg-white text-ink',
-    muted: 'text-ink/55',
+    q: 'How do changes reach my app so fast?',
+    a: 'The SDK loads a snapshot of your rules, then follows a server-sent event stream. When you flip a flag, the change arrives in under a second and lookups run in memory.',
   },
   {
-    value: '48',
-    unit: 'h',
-    body: "Before an invite link expires, so an old email can't let anyone in.",
-    tone: 'bg-[#151817] text-white',
-    muted: 'text-white/80',
+    q: "What happens if a flag doesn't exist or the stream drops?",
+    a: 'Unknown flags and unknown users are off. The client keeps the last rules it had and reconnects on its own.',
+  },
+  {
+    q: 'Can I keep my API key in the browser?',
+    a: 'No. The org API key is for your server only. Admins can create and revoke keys in Settings, and each key is shown once.',
+  },
+  {
+    q: 'Does FlagFlow do percentage rollouts or A/B tests?',
+    a: 'Not in v1. Flags are on or off, for a target list or for all users. Percentage rollouts, experiments and per-environment flags are out of scope for now.',
   },
 ];
 
-// Where each pill lands in the strip at the bottom, as % of the strip.
-const PILLS = [
-  { label: 'No Redeploys', tone: 'bg-white text-ink', left: '2%', bottom: '16%', rotate: 13 },
-  { label: 'Live Updates', tone: 'bg-lime text-ink', left: '15%', bottom: '6%', rotate: -27 },
-  { label: 'Per-User Targeting', tone: 'bg-white text-ink', left: '27%', bottom: '3%', rotate: 4 },
-  { label: 'End-User Lookup', tone: 'bg-flame text-white', left: '46%', bottom: '4%', rotate: -6 },
-  { label: 'SSE Stream', tone: 'bg-white text-ink', left: '63%', bottom: '10%', rotate: 14 },
-  { label: 'Audit Log', tone: 'bg-lime text-ink', left: '83%', bottom: '14%', rotate: 9 },
-  { label: 'Kill Switch', tone: 'bg-flame text-white', left: '29%', bottom: '42%', rotate: 8 },
-  { label: 'Roles and Invites', tone: 'bg-lime text-ink', left: '52%', bottom: '40%', rotate: -10 },
-  { label: 'Under a Second', tone: 'bg-white text-ink', left: '71%', bottom: '46%', rotate: -5 },
-];
-
-/** Lands, bounces twice and settles: the standard bounce-out curve. */
-function bounceOut(t: number) {
-  const n = 7.5625;
-  const d = 2.75;
-  if (t < 1 / d) return n * t * t;
-  if (t < 2 / d) return n * (t - 1.5 / d) ** 2 + 0.75;
-  if (t < 2.5 / d) return n * (t - 2.25 / d) ** 2 + 0.9375;
-  return n * (t - 2.625 / d) ** 2 + 0.984375;
-}
-
-/**
- * One pill whose fall is tied to the scroll: scrolling down drops it into the pile, scrolling up lifts
- * it back out. The outer element carries the fall; the inner one can be dragged without fighting it.
- */
-function FallingPill({
-  pill,
-  index,
-  progress,
-  bounds,
-  canDrag,
-}: {
-  pill: (typeof PILLS)[number];
-  index: number;
-  progress: MotionValue<number>;
-  bounds: RefObject<HTMLDivElement | null>;
-  canDrag: boolean;
-}) {
-  const reduce = useReducedMotion();
-  const { label, tone, left, bottom, rotate } = pill;
-  // Each pill gets its own slice of the scroll, staggered so they land one after another.
-  const start = 0.3 + index * 0.045;
-  const end = start + 0.3;
-  const y = useTransform(progress, [start, end], [-560, 0], { ease: bounceOut });
-  const spin = useTransform(progress, [start, end], [rotate + (index % 2 ? 60 : -60), rotate]);
-  const opacity = useTransform(progress, [start, start + 0.04], [0, 1]);
-
-  return (
-    <motion.li
-      style={reduce ? { left, bottom, rotate } : { left, bottom, y, rotate: spin, opacity }}
-      className="absolute"
-    >
-      <motion.span
-        drag={canDrag}
-        dragConstraints={bounds}
-        dragElastic={0.15}
-        whileHover={canDrag ? { scale: 1.06 } : undefined}
-        className={`block rounded-full px-5 py-2.5 text-[14px] font-semibold tracking-[-0.01em] whitespace-nowrap shadow-[0_10px_30px_rgb(0_0_0/0.25)] select-none sm:px-9 sm:py-4 sm:text-lg ${
-          canDrag ? 'cursor-grab active:cursor-grabbing' : ''
-        } ${tone}`}
-      >
-        {label}
-      </motion.span>
-    </motion.li>
-  );
-}
-
-/** The flex weight of each stat card: the hovered one widens, the first keeps a wide resting width. */
-function statGrow(index: number, active: number) {
-  if (index === active) return 1.85;
-  return index === 0 ? 1.75 : 1;
-}
-
-function Numbers() {
-  // The middle card starts wide; hovering another card hands the extra width to it.
-  const [active, setActive] = useState(1);
-  const pillsRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-  // 0 when the section starts entering the screen, 1 once its bottom reaches the bottom of the screen.
-  // The spring adds a little weight so the pills don't stop dead when scrolling stops.
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end end'] });
-  const fall = useSpring(scrollYProgress, { stiffness: 140, damping: 24, restDelta: 0.001 });
-  // Dragging pills is a pointer toy; on touch it would swallow the page scroll.
-  const [canDrag] = useState(() => typeof window !== 'undefined' && matchMedia('(hover: hover)').matches);
-
+function Faq() {
   return (
     <section
-      ref={sectionRef}
-      id="numbers"
-      aria-labelledby="numbers-title"
-      className="relative flex flex-col overflow-hidden bg-ink pt-20 text-white lg:min-h-dvh lg:pt-[6.3vh]"
+      id="faq"
+      aria-labelledby="faq-title"
+      className="scroll-mt-20 bg-[#f4f5f2] py-24 text-ink lg:py-32"
     >
-      {/* Lime glow in the lower left, a pale one in the lower right. */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -bottom-48 -left-40 size-[558px] rounded-full bg-lime/55 blur-[126px]" />
-        <div className="absolute -right-40 -bottom-56 size-[468px] rounded-full bg-white/40 blur-[126px]" />
-      </div>
-
-      <div className="relative mx-auto w-full max-w-[1116px] px-4">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+      <div className="mx-auto grid max-w-[1080px] grid-cols-1 gap-10 px-4 lg:grid-cols-[0.8fr_1.2fr]">
+        <Reveal>
+          <Eyebrow dark={false}>FAQ</Eyebrow>
           <h2
-            id="numbers-title"
-            className="text-[clamp(2.25rem,min(5.4vw,9vh),5.4rem)] leading-[1.02] font-bold tracking-[-0.055em]"
+            id="faq-title"
+            className="mt-5 text-[clamp(2.1rem,4vw,3.2rem)] leading-[1.02] font-bold tracking-[-0.05em]"
           >
-            The Numbers
-            <br />
-            Behind FlagFlow
+            Questions, Answered Plainly
           </h2>
-          <div className="max-w-[297px] lg:pt-[2.7vh]">
-            <p className="text-lg leading-snug text-white/55">
-              Small numbers, on purpose. They come from how the product works, not from a sales deck.
-            </p>
-            <Link
-              to="/register"
-              className="mt-5 inline-flex h-[47px] items-center gap-2 rounded-[9px] bg-lime px-5 text-lg font-semibold text-ink transition-[filter,transform] hover:brightness-110 active:translate-y-px"
-            >
-              Get started
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-          </div>
+        </Reveal>
+        <div className="divide-y divide-ink/10 border-y border-ink/10">
+          {FAQ.map(({ q, a }) => (
+            <details key={q} className="group">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[18px] font-semibold tracking-[-0.015em] [&::-webkit-details-marker]:hidden">
+                {q}
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-ink/[0.06] transition-[transform,background-color] duration-300 group-open:rotate-45 group-open:bg-lime">
+                  <Plus className="size-4" aria-hidden="true" />
+                </span>
+              </summary>
+              <p className="max-w-[600px] pb-6 text-[15.5px] leading-relaxed text-ink/65">{a}</p>
+            </details>
+          ))}
         </div>
-
-        <ul className="mt-12 flex flex-col gap-4 lg:mt-[5.4vh] lg:flex-row" onMouseLeave={() => setActive(1)}>
-          {STATS.map(({ value, unit, body, tone, muted }, i) => (
-            <li
-              key={unit}
-              onMouseEnter={() => setActive(i)}
-              style={{ '--grow': statGrow(i, active) } as CSSProperties}
-              className={`flex h-[270px] min-w-0 flex-col rounded-[20px] p-8 transition-[flex-grow] duration-700 ease-(--ease-out-expo) motion-reduce:transition-none lg:h-[clamp(270px,36vh,378px)] lg:basis-0 lg:grow-(--grow) lg:p-10 ${tone}`}
-            >
-              <p className="flex items-start leading-none">
-                <span className="text-[clamp(4.5rem,7.2vw,7.65rem)] font-medium tracking-[-0.06em]">
-                  {value}
-                </span>
-                <span className="mt-[0.1em] ml-2 text-[clamp(1.575rem,2.52vw,2.7rem)] font-medium tracking-[-0.04em]">
-                  {unit}
-                </span>
-              </p>
-              <p className={`mt-auto max-w-[414px] text-[15px] leading-snug ${muted}`}>{body}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* The pills fall into a pile as the page scrolls; with a mouse they can be dragged around. */}
-      <div
-        ref={pillsRef}
-        className="relative mx-auto mt-10 h-[216px] w-full max-w-[1116px] lg:mt-auto lg:h-[21.6vh]"
-      >
-        <ul aria-label="What FlagFlow is about">
-          {PILLS.map((pill, i) => (
-            <FallingPill
-              key={pill.label}
-              pill={pill}
-              index={i}
-              progress={fall}
-              bounds={pillsRef}
-              canDrag={canDrag}
-            />
-          ))}
-        </ul>
       </div>
     </section>
   );
 }
 
-// FlagFlow has no customers to quote yet, so these cards are scenarios from the people in PRODUCT.md,
-// written as what happens, not as reviews from named people.
-const STORIES = [
-  {
-    text: 'Checkout starts throwing errors at 2am. You switch new_checkout off, and it is gone from every running app in under a second. No hotfix, no redeploy.',
-    role: 'On-call engineer',
-    moment: 'Switching off a broken feature',
-    icon: Siren,
-    tone: 'bg-ink text-white',
-    muted: 'text-white/55',
-    badge: 'bg-white/10 text-white',
-    tilt: 0,
-  },
-  {
-    text: 'A customer says the new dashboard looks wrong. You search for U001, see exactly which flags they get, and turn one off just for them.',
-    role: 'Support and product',
-    moment: "Debugging one user's report",
-    icon: LifeBuoy,
-    tone: 'bg-white text-ink shadow-[0_20px_80px_rgb(0_0_0/0.12)]',
-    muted: 'text-ink/55',
-    badge: 'bg-ink/[0.06] text-ink',
-    tilt: -4,
-  },
-  {
-    text: 'The beta goes to five friendly customers first. You add their user IDs to the flag, watch it for a week, then turn it on for all users.',
-    role: 'Product manager',
-    moment: 'Rolling out to a few users first',
-    icon: Rocket,
-    tone: 'bg-iris text-white',
-    muted: 'text-white/80',
-    badge: 'bg-white/15 text-white',
-    tilt: 4,
-  },
-  {
-    text: 'A flag was turned on Friday and nobody remembers doing it. The audit log shows who changed it, what changed, and when.',
-    role: 'Team admin',
-    moment: 'Finding out who changed what',
-    icon: ShieldCheck,
-    tone: 'bg-lime text-ink',
-    muted: 'text-ink/65',
-    badge: 'bg-ink/10 text-ink',
-    tilt: -3,
-  },
-];
+// ---------------------------------------------------------------------------------------------------
+// Closing call to action and footer.
 
-/** A blocky closing quote mark, drawn on a pixel grid like the reference. */
-function QuoteMark() {
-  return (
-    <svg viewBox="0 0 12 9" className="h-10 w-auto fill-current" aria-hidden="true">
-      <path d="M0 0h4v4H2v2H0zM2 6h2v3H2zM0 7h1v2H0z" />
-      <path d="M7 0h4v4H9v2H7zM9 6h2v3H9zM7 7h1v2H7z" />
-    </svg>
-  );
-}
+type FooterLink = { label: string; href: string; external?: boolean } | { label: string; to: string };
 
-function StoryCard({ story, index }: { story: (typeof STORIES)[number]; index: number }) {
-  const ref = useRef<HTMLLIElement>(null);
-  const reduce = useReducedMotion();
-  // Tilted while it rises, flat by the time it reaches the stack.
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.35'] });
-  const rotate = useTransform(scrollYProgress, [0, 1], [reduce ? 0 : story.tilt, 0]);
-  const { text, role, moment, icon: Icon, tone, muted, badge } = story;
-
-  return (
-    <motion.li
-      ref={ref}
-      // Each card sticks a little lower than the last, so the edges of the stack show.
-      style={{ rotate, zIndex: index + 1, '--stack': `${index * 14}px` } as MotionStyle}
-      className={`sticky top-[calc(5.4rem+var(--stack))] rounded-[22px] p-8 sm:p-12 lg:top-[calc(27.9vh+var(--stack))] ${tone}`}
-    >
-      <QuoteMark />
-      <blockquote className="mt-8 text-[clamp(1.08rem,1.71vw,1.53rem)] leading-[1.35] font-semibold tracking-[-0.02em]">
-        {text}
-      </blockquote>
-      <div className="mt-9 flex items-center gap-4">
-        <span className={`grid size-14 shrink-0 place-items-center rounded-full ${badge}`}>
-          <Icon className="size-6 stroke-[1.6]" aria-hidden="true" />
-        </span>
-        <span>
-          <span className="block text-xl font-medium tracking-[-0.02em]">{role}</span>
-          <span className={`block text-[15px] ${muted}`}>{moment}</span>
-        </span>
-      </div>
-    </motion.li>
-  );
-}
-
-function Stories() {
-  return (
-    <section
-      id="stories"
-      aria-labelledby="stories-title"
-      className="relative bg-white pt-24 pb-24 text-ink lg:pt-[10.8vh] lg:pb-[27vh]"
-    >
-      {/* On desktop the heading stays put while the cards stack up beneath it. */}
-      <div className="mx-auto max-w-[1116px] px-4 text-center lg:sticky lg:top-[2.7vh]">
-        <h2
-          id="stories-title"
-          className="text-[clamp(2.25rem,min(4.86vw,7.65vh),4.95rem)] leading-[1.02] font-bold tracking-[-0.055em]"
-        >
-          Real Teams, Real
-          <br />
-          Rollout Moments
-        </h2>
-        <p className="mx-auto mt-4 max-w-[387px] text-[15px] leading-snug text-ink/55">
-          What a normal week with FlagFlow looks like for each person on the team.
-        </p>
-      </div>
-
-      <ul className="mx-auto mt-12 flex max-w-[810px] flex-col gap-[19.8vh] px-4 lg:mt-[4.5vh]">
-        {STORIES.map((story, i) => (
-          <StoryCard key={story.role} story={story} index={i} />
-        ))}
-      </ul>
-    </section>
-  );
-}
-
-const STRIP_WORDS = ["Let's Get Started", 'Ship Without Redeploying'];
-
-/** One tilted band of text that scrolls forever; the copy repeats so the loop has no seam. */
-function MarqueeStrip({ tone, className, reverse }: { tone: string; className: string; reverse?: boolean }) {
-  const run = Array.from({ length: 4 }, () => STRIP_WORDS).flat();
-  const items = (hidden: boolean) =>
-    run.map((word, i) => (
-      <li key={`${hidden}-${i}`} className="flex shrink-0 items-center gap-10 pr-10">
-        <span className="text-[clamp(1.44rem,2.7vw,2.475rem)] font-semibold tracking-[-0.035em] whitespace-nowrap">
-          {word}
-        </span>
-        <Asterisk className="size-6 stroke-[2.5] opacity-80 lg:size-8" />
-      </li>
-    ));
-  return (
-    <div className={`absolute left-[-10%] w-[120%] py-4 lg:py-6 ${tone} ${className}`}>
-      <ul className={`marquee-track ${reverse ? 'marquee-reverse' : ''}`}>
-        {items(false)}
-        {items(true)}
-      </ul>
-    </div>
-  );
-}
-
-const FOOTER_LINKS = [
+const FOOTER_LINKS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'Product',
     links: [
-      { label: 'About', href: '#about' },
-      { label: 'Features', href: '#features' },
-      { label: 'Pricing', href: '#pricing' },
-      { label: 'Numbers', href: '#numbers' },
+      ...NAV.filter((n) => n.id !== 'docs').map((n) => ({ label: n.label, href: `#${n.id}` })),
+      { label: 'FAQ', href: '#faq' },
     ],
   },
   {
-    title: 'See It Work',
+    title: 'Developers',
     links: [
-      { label: 'How it works', href: '#how' },
-      { label: 'Live demo', href: '#demo' },
-      { label: 'Rollout moments', href: '#stories' },
+      { label: 'Quickstart', href: '#docs' },
+      { label: 'OpenAPI spec', href: DOCS_URL, external: true },
+      DEMO_URL
+        ? { label: 'Live demo', href: DEMO_URL, external: true }
+        : { label: 'Interactive preview', href: '#demo' },
     ],
   },
   {
@@ -1022,48 +1104,70 @@ const FOOTER_LINKS = [
 ];
 
 function Footer() {
-  const linkClass = 'text-lg text-white/85 transition-colors hover:text-lime';
-  return (
-    <footer className="bg-white">
-      {/* Two crossed bands scrolling in opposite directions. Decorative: the same words are buttons below. */}
-      <div className="relative h-[180px] overflow-hidden lg:h-[261px]" aria-hidden="true">
-        <MarqueeStrip tone="bg-lime text-ink" className="top-[34%] -rotate-[4deg]" reverse />
-        <MarqueeStrip tone="bg-ink text-white [&_svg]:text-lime" className="top-[22%] rotate-[4deg]" />
-      </div>
+  const linkClass =
+    'inline-flex items-center gap-1 text-[15px] text-white/60 transition-colors hover:text-white';
+  const toTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    });
+    // Move focus with the view, so keyboard users continue from the top too.
+    document.querySelector<HTMLElement>('header a')?.focus({ preventScroll: true });
+  };
 
-      <div className="relative overflow-hidden bg-ink text-white">
-        <div className="relative mx-auto grid max-w-[1116px] gap-14 px-4 pt-20 lg:grid-cols-[1.1fr_1.6fr] lg:pt-28">
-          <div>
-            <h2 className="text-[clamp(1.8rem,2.7vw,2.475rem)] leading-[1.08] font-semibold tracking-[-0.04em]">
-              Turn on your first
-              <br />
-              flag today.
-            </h2>
-            <p className="mt-4 max-w-[306px] text-[15px] leading-snug text-white/55">
-              Create an org, copy your API key, and change what users see without a redeploy.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                to="/register"
-                className="inline-flex h-[47px] items-center gap-2 rounded-[9px] bg-lime px-5 text-lg font-semibold text-ink transition-[filter,transform] hover:brightness-110 active:translate-y-px"
-              >
-                Get started
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-              <Link
-                to="/login"
-                className="inline-flex h-[47px] items-center rounded-[9px] border border-white/15 px-5 text-lg font-semibold transition-colors hover:bg-white/[0.06]"
-              >
-                Sign in
-              </Link>
+  return (
+    <footer className="relative overflow-hidden bg-ink text-white">
+      <div className="mx-auto max-w-[1080px] px-4 pt-24">
+        <Reveal>
+          <div className="relative overflow-hidden rounded-[24px] bg-lime px-7 py-12 text-ink sm:px-12 sm:py-14">
+            <div
+              className="pointer-events-none absolute -right-10 -bottom-24 size-[320px] rounded-full border-[40px] border-ink/[0.06]"
+              aria-hidden="true"
+            />
+            <div
+              className="pointer-events-none absolute right-24 -bottom-40 size-[320px] rounded-full border-[40px] border-ink/[0.04]"
+              aria-hidden="true"
+            />
+            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <h2 className="text-[clamp(2rem,4vw,3.3rem)] leading-[1.02] font-bold tracking-[-0.05em]">
+                  Turn On Your First Flag Today
+                </h2>
+                <p className="mt-4 max-w-[420px] text-lg leading-snug text-ink/70">
+                  Create an org, copy your API key, and change what users see without a redeploy.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/register"
+                  className="inline-flex h-12 items-center gap-2 rounded-[10px] bg-ink px-5 text-lg font-semibold text-white transition-transform active:translate-y-px"
+                >
+                  Get started free
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex h-12 items-center rounded-[10px] border border-ink/20 px-5 text-lg font-semibold transition-colors hover:bg-ink/[0.06]"
+                >
+                  Sign in
+                </Link>
+              </div>
             </div>
           </div>
+        </Reveal>
 
+        <div className="grid grid-cols-1 gap-12 pt-20 pb-14 lg:grid-cols-[1.2fr_2fr]">
+          <div>
+            <Wordmark />
+            <p className="mt-4 max-w-[280px] text-[15px] leading-snug text-white/50">
+              Feature flags for small SaaS teams. Live changes, no redeploys.
+            </p>
+          </div>
           <nav aria-label="Footer" className="grid grid-cols-2 gap-10 sm:grid-cols-3">
             {FOOTER_LINKS.map(({ title, links }) => (
               <div key={title}>
-                <h3 className="text-lg font-semibold">{title}</h3>
-                <ul className="mt-6 space-y-3.5">
+                <h3 className="font-mono text-[12px] tracking-[0.08em] text-white/40 uppercase">{title}</h3>
+                <ul className="mt-5 space-y-3">
                   {links.map((link) => (
                     <li key={link.label}>
                       {'to' in link ? (
@@ -1071,8 +1175,18 @@ function Footer() {
                           {link.label}
                         </Link>
                       ) : (
-                        <a href={link.href} className={linkClass}>
+                        <a
+                          href={link.href}
+                          {...(link.external && { target: '_blank', rel: 'noreferrer' })}
+                          className={linkClass}
+                        >
                           {link.label}
+                          {link.external && (
+                            <>
+                              <ArrowUpRight className="size-3.5" aria-hidden="true" />
+                              <span className="sr-only">(opens in a new tab)</span>
+                            </>
+                          )}
                         </a>
                       )}
                     </li>
@@ -1083,58 +1197,53 @@ function Footer() {
           </nav>
         </div>
 
-        <div className="relative mx-auto mt-16 flex max-w-[1116px] flex-col gap-3 border-t border-white/10 px-4 py-7 text-[14px] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 border-t border-white/[0.08] py-7 text-[14px] text-white/45 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} FlagFlow</p>
-          <p>Live flag changes, no redeploys.</p>
-          <a href="#" className="text-white/85 transition-colors hover:text-lime">
+          <button
+            type="button"
+            onClick={toTop}
+            className="inline-flex items-center gap-2 self-start rounded-lg py-1 text-white/70 transition-colors hover:text-lime sm:self-auto"
+          >
             Back to top
-          </a>
+            <ArrowUp className="size-4" aria-hidden="true" />
+          </button>
         </div>
-
-        {/* The giant wordmark, cut off by the bottom edge and fading into the ground. */}
-        <p
-          aria-hidden="true"
-          className="pointer-events-none mx-auto -mb-[0.22em] max-w-[1116px] bg-linear-to-b from-white/[0.07] to-white/0 bg-clip-text text-center text-[clamp(4.5rem,17.1vw,15.3rem)] leading-[0.9] font-bold tracking-[-0.06em] text-transparent select-none"
-        >
-          FlagFlow
-        </p>
       </div>
     </footer>
   );
 }
 
 export function LandingPage() {
+  // Arriving from another page with a hash (e.g. /#docs from the sign-in page), the browser tried to scroll
+  // before this page had rendered. Scroll once it has.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, []);
+
   return (
-    <div className="landing relative z-10 min-h-dvh bg-white font-display">
-      <div className="relative overflow-hidden bg-ink">
-        {/* Decoration: side rails, arcs, sparkles, lime glows in the lower corners and a pale one under the cards. */}
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <div className="absolute inset-y-0 left-[17%] w-px bg-white/[0.05]" />
-          <div className="absolute inset-y-0 right-[17%] w-px bg-white/[0.05]" />
-          <div className="absolute top-[30%] left-1/2 aspect-square w-[1035px] -translate-x-1/2 rounded-full border border-white/[0.06]" />
-          <div className="absolute top-[40%] left-1/2 aspect-square w-[810px] -translate-x-1/2 rounded-full border border-white/[0.04]" />
-          <div className="absolute -bottom-56 -left-40 size-[504px] rounded-full bg-lime/45 blur-[117px]" />
-          <div className="absolute -right-48 -bottom-64 size-[378px] rounded-full bg-lime/25 blur-[126px]" />
-          <div className="absolute -bottom-36 left-1/2 h-[216px] w-[648px] -translate-x-1/2 rounded-full bg-white/30 blur-[90px]" />
-        </div>
-        {/* On a phone the sparkles would cross the hero text, so they show from tablet width up. */}
-        <div className="hidden md:block">
-          <Sparkle className="top-[16%] left-[8%] size-20" />
-          <Sparkle className="top-[34%] right-[14%] size-28" />
-        </div>
-
-        <Header />
-        <main>
+    <div className="landing relative z-10 min-h-dvh bg-ink font-display">
+      <SiteHeader />
+      <main>
+        <div className="relative overflow-hidden">
+          {/* Decoration: a dot grid fading out, a lime glow behind the preview, two sparkles. */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            <div className="absolute inset-0 bg-[radial-gradient(rgb(255_255_255/0.07)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_55%_at_50%_20%,#000,transparent)]" />
+            <div className="absolute top-[45%] left-1/2 h-[480px] w-[900px] -translate-x-1/2 rounded-full bg-lime/[0.13] blur-[140px]" />
+          </div>
+          <div className="hidden md:block">
+            <Sparkle className="top-[11%] left-[7%] size-20" />
+            <Sparkle className="top-[24%] right-[9%] size-24" />
+          </div>
           <Hero />
-          <Showcase />
-        </main>
-      </div>
-
-      <About />
-      <Features />
-      <Pricing />
-      <Numbers />
-      <Stories />
+          <StackRow />
+        </div>
+        <Product />
+        <HowItWorks />
+        <UseCases />
+        <Docs />
+        <Faq />
+      </main>
       <Footer />
     </div>
   );
